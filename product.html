@@ -523,1439 +523,166 @@ Loading product...
 
 
 <script>
+const API_BASE="https://script.google.com/macros/s/AKfycbzzW9XtaXrMbm2YS1CFpoBu4tz2h2huBGNwmybtB36OFC3HQ02A7EoXhHZFmf-5O2ohFQ/exec";
+const API_URL=API_BASE+"?action=products";
+const params=new URLSearchParams(window.location.search);
+const productId=params.get("id");
 
+let cart=JSON.parse(localStorage.getItem("urbnvybe_cart")||"[]");
+let currentProduct=null,variants=[],selectedVariant=null,quantity=1;
 
-/* =====================================
-   API
-===================================== */
-
-const API_URL =
-"https://script.google.com/macros/s/AKfycbzzW9XtaXrMbm2YS1CFpoBu4tz2h2huBGNwmybtB36OFC3HQ02A7EoXhHZFmf-5O2ohFQ/exec?action=products";
-
-
-/* =====================================
-   PRODUCT ID
-===================================== */
-
-const params =
-new URLSearchParams(
-    window.location.search
-);
-
-const productId =
-params.get("id");
-
-
-/* =====================================
-   CART
-===================================== */
-
-let cart =
-JSON.parse(
-    localStorage.getItem(
-        "urbnvybe_cart"
-    )
-) || [];
-
-
-/* =====================================
-   CURRENT PRODUCT / VARIANT
-===================================== */
-
-let currentProduct = null;
-
-let variants = [];
-
-let selectedVariant = null;
-
-let quantity = 1;
-
-
-/* =====================================
-   CART COUNT
-===================================== */
-
-function updateCartCount() {
-
-    const count =
-        cart.reduce(
-            (total, item) =>
-                total +
-                Number(
-                    item.quantity || 0
-                ),
-            0
-        );
-
-    document.getElementById(
-        "cartCount"
-    ).textContent = count;
-
+function updateCartCount(){
+  const n=cart.reduce((t,i)=>t+Number(i.quantity||0),0);
+  const e=document.getElementById("cartCount"); if(e)e.textContent=n;
+}
+function asArray(v){
+  if(Array.isArray(v))return v;
+  if(typeof v==="string"&&v.trim()){try{const x=JSON.parse(v);return Array.isArray(x)?x:[]}catch(e){}}
+  return [];
 }
 
+async function loadProduct(){
+  const page=document.getElementById("page");
+  if(!productId){showError("Product ID is missing.");return;}
+  try{
+    const r=await fetch(API_URL,{cache:"no-store"});
+    if(!r.ok)throw new Error("Unable to connect to the store API.");
+    const data=await r.json();
+    if(!data.success)throw new Error(data.error||"Unable to load products.");
 
-/* =====================================
-   LOAD PRODUCT
-===================================== */
+    const product=(data.products||[]).find(p=>String(p.ProductID||"").trim()===String(productId).trim());
+    if(!product)throw new Error("Product not found.");
+    currentProduct=product;
 
-async function loadProduct() {
+    variants=asArray(product.variants);
+    if(!variants.length)variants=asArray(data.variants).filter(v=>String(v.ProductID||"").trim()===String(product.ProductID).trim());
 
-    const page =
-        document.getElementById(
-            "page"
-        );
-
-
-    if (!productId) {
-
-        showError(
-            "Product ID is missing."
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        const response =
-            await fetch(API_URL);
-
-
-        const data =
-            await response.json();
-
-
-        if (!data.success) {
-
-            throw new Error(
-                data.error ||
-                "Unable to load products."
-            );
-
+    /* Fallback for APIs that expose a separate variants action. */
+    if(!variants.length){
+      try{
+        const vr=await fetch(API_BASE+"?action=variants&productId="+encodeURIComponent(product.ProductID),{cache:"no-store"});
+        if(vr.ok){
+          const vd=await vr.json();
+          if(vd.success)variants=asArray(vd.variants).length?asArray(vd.variants):asArray(vd.data);
         }
-
-
-        const product =
-            (data.products || [])
-            .find(
-                item =>
-                    String(
-                        item.ProductID
-                    ).trim()
-                    ===
-                    String(
-                        productId
-                    ).trim()
-            );
-
-
-        if (!product) {
-
-            throw new Error(
-                "Product not found."
-            );
-
-        }
-
-
-        currentProduct =
-            product;
-
-
-        variants =
-            (product.variants || [])
-            .filter(
-                variant =>
-                    String(
-                        variant.Status || ""
-                    ).toLowerCase()
-                    ===
-                    "active"
-            );
-
-
-        document.title =
-            product.ProductName +
-            " | URBNVYBE";
-
-
-        renderProduct(product);
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        showError(
-            error.message
-        );
-
+      }catch(e){console.warn("Variant fallback:",e);}
     }
 
-}
-
-
-/* =====================================
-   ERROR
-===================================== */
-
-function showError(message) {
-
-    document.getElementById(
-        "page"
-    ).innerHTML = `
-
-        <div class="message">
-
-            <h2>
-                Unable to load product
-            </h2>
-
-            <p style="margin-top:15px;">
-                ${escapeHTML(message)}
-            </p>
-
-            <p style="margin-top:20px;">
-
-                <a href="index.html">
-                    Back to Shop
-                </a>
-
-            </p>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =====================================
-   RENDER PRODUCT
-===================================== */
-
-function renderProduct(product) {
-
-    const page =
-        document.getElementById(
-            "page"
-        );
-
-
-    const images = [
-
-        product.MainImage,
-        product.BackImage,
-        product.SideImage,
-        product.SleeveImage,
-        product.CollarImage,
-        product.ModelImage
-
-    ].filter(
-        image =>
-            image &&
-            String(image).trim() !== ""
+    variants=variants.map(v=>({
+      VariantID:v.VariantID||"",
+      ProductID:v.ProductID||product.ProductID,
+      SKU:v.SKU||"",
+      ColorCode:v.ColorCode||product.ColorCode||"",
+      Size:String(v.Size||"").trim(),
+      Price:Number(v.Price||product.Price||0),
+      ComparePrice:Number(v.ComparePrice||product.ComparePrice||0),
+      Stock:Number(v.Stock||0),
+      Status:String(v.Status||"Active").trim(),
+      Image:v.Image||""
+    })).filter(v=>
+      String(v.ProductID).trim()===String(product.ProductID).trim() &&
+      v.Size!=="" &&
+      String(v.Status).toLowerCase()==="active"
     );
 
-
-    if (images.length === 0) {
-
-        images.push("");
-
-    }
-
-
-    page.innerHTML = `
-
-        <div class="product-container">
-
-
-            <!-- GALLERY -->
-
-            <div class="gallery">
-
-
-                <div class="main-image">
-
-                    ${
-                        images[0]
-
-                        ?
-
-                        `
-
-                        <img
-                            id="mainProductImage"
-                            src="${escapeHTML(
-                                images[0]
-                            )}"
-                            alt="${escapeHTML(
-                                product.ProductName
-                            )}"
-                        >
-
-                        `
-
-                        :
-
-                        `
-
-                        <span>
-                            Product Image
-                        </span>
-
-                        `
-                    }
-
-                </div>
-
-
-                <div class="thumbnail-container">
-
-                    ${
-
-                        images.map(
-                            (image, index) =>
-
-                            image
-
-                            ?
-
-                            `
-
-                            <div
-                                class="thumbnail ${
-                                    index === 0
-                                    ? "active"
-                                    : ""
-                                }"
-                                onclick="changeImage(
-                                    '${escapeJS(image)}',
-                                    this
-                                )"
-                            >
-
-                                <img
-                                    src="${escapeHTML(image)}"
-                                    alt="Product view"
-                                >
-
-                            </div>
-
-                            `
-
-                            :
-
-                            ""
-
-                        ).join("")
-
-                    }
-
-                </div>
-
-            </div>
-
-
-            <!-- PRODUCT INFORMATION -->
-
-            <div class="product-info">
-
-
-                <div class="category">
-
-                    ${escapeHTML(
-                        product.Category || ""
-                    )}
-
-                </div>
-
-
-                <h1 class="product-title">
-
-                    ${escapeHTML(
-                        product.ProductName || ""
-                    )}
-
-                </h1>
-
-
-                <div class="price-row">
-
-                    <span
-                        class="price"
-                        id="productPrice"
-                    >
-
-                        ₹${formatMoney(
-                            product.Price
-                        )}
-
-                    </span>
-
-
-                    <span
-                        class="compare-price"
-                        id="comparePrice"
-                    >
-
-                        ${
-                            product.ComparePrice
-                            ?
-                            "₹" +
-                            formatMoney(
-                                product.ComparePrice
-                            )
-                            :
-                            ""
-                        }
-
-                    </span>
-
-                </div>
-
-
-                <div class="description">
-
-                    ${escapeHTML(
-                        product.Description || ""
-                    )}
-
-                </div>
-
-
-                <!-- COLOUR -->
-
-                <div class="option">
-
-                    <div class="option-title">
-
-                        Colour
-
-                    </div>
-
-
-                    <div class="color-value">
-
-                        ${escapeHTML(
-                            product.Color ||
-                            product.ColorCode ||
-                            "Navy Blue"
-                        )}
-
-                    </div>
-
-                </div>
-
-
-                <!-- SIZE -->
-
-                <div class="option">
-
-                    <div class="option-title">
-
-                        Size
-
-                    </div>
-
-
-                    <div
-                        id="sizeButtons"
-                        class="size-buttons"
-                    >
-
-                    </div>
-
-
-                    <div
-                        id="stockMessage"
-                        class="stock-message"
-                    >
-
-                        Select a size.
-
-                    </div>
-
-                </div>
-
-
-                <!-- QUANTITY -->
-
-                <div class="option">
-
-                    <div class="option-title">
-
-                        Quantity
-
-                    </div>
-
-
-                    <div class="quantity-box">
-
-                        <button
-                            id="minusButton"
-                            onclick="decreaseQuantity()"
-                        >
-
-                            −
-
-                        </button>
-
-
-                        <span id="quantity">
-
-                            1
-
-                        </span>
-
-
-                        <button
-                            id="plusButton"
-                            onclick="increaseQuantity()"
-                        >
-
-                            +
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ACTIONS -->
-
-                <div class="actions">
-
-                    <button
-                        id="addCartButton"
-                        class="add-cart"
-                        onclick="handleAddToCart()"
-                        disabled
-                    >
-
-                        SELECT SIZE
-
-                    </button>
-
-
-                    <button
-                        id="buyNowButton"
-                        class="buy-now"
-                        onclick="handleBuyNow()"
-                        disabled
-                    >
-
-                        SELECT SIZE
-
-                    </button>
-
-                </div>
-
-
-            </div>
-
-        </div>
-
-
-        <!-- DETAILS -->
-
-        <div class="details">
-
-            <div class="detail-box">
-
-                <h2>
-                    Product Details
-                </h2>
-
-
-                <p>
-
-                    ${escapeHTML(
-                        product.Description ||
-                        "Premium quality product designed for everyday comfort and style."
-                    )}
-
-                </p>
-
-
-                ${
-                    product.Material
-
-                    ?
-
-                    `
-
-                    <p style="margin-top:15px;">
-
-                        <strong>
-                            Material:
-                        </strong>
-
-                        ${escapeHTML(
-                            product.Material
-                        )}
-
-                    </p>
-
-                    `
-
-                    :
-
-                    ""
-
-                }
-
-
-                ${
-                    product.Gender
-
-                    ?
-
-                    `
-
-                    <p>
-
-                        <strong>
-                            Gender:
-                        </strong>
-
-                        ${escapeHTML(
-                            product.Gender
-                        )}
-
-                    </p>
-
-                    `
-
-                    :
-
-                    ""
-
-                }
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    renderVariants();
-
+    document.title=(product.ProductName||"Product")+" | URBNVYBE";
+    renderProduct(product);
+  }catch(e){console.error(e);showError(e.message||"Unable to load product.");}
 }
 
-
-/* =====================================
-   RENDER VARIANTS
-===================================== */
-
-function renderVariants() {
-
-    const container =
-        document.getElementById(
-            "sizeButtons"
-        );
-
-
-    if (!container) return;
-
-
-    container.innerHTML = "";
-
-
-    if (variants.length === 0) {
-
-        container.innerHTML = `
-
-            <span>
-                No sizes available.
-            </span>
-
-        `;
-
-        return;
-
-    }
-
-
-    /*
-     * Remove duplicate sizes.
-     */
-
-    const uniqueSizes = [];
-
-
-    variants.forEach(
-        variant => {
-
-            const size =
-                String(
-                    variant.Size || ""
-                ).trim();
-
-
-            if (
-                size &&
-                !uniqueSizes.includes(
-                    size
-                )
-            ) {
-
-                uniqueSizes.push(
-                    size
-                );
-
-            }
-
-        }
-    );
-
-
-    uniqueSizes.forEach(
-        size => {
-
-            const sizeVariants =
-                variants.filter(
-                    variant =>
-                        String(
-                            variant.Size || ""
-                        ).trim()
-                        ===
-                        size
-                );
-
-
-            /*
-             * If multiple variants have
-             * the same size, use the first
-             * available one.
-             */
-
-            const variant =
-                sizeVariants.find(
-                    item =>
-                        Number(
-                            item.Stock
-                        ) > 0
-                )
-                ||
-                sizeVariants[0];
-
-
-            const stock =
-                Number(
-                    variant.Stock || 0
-                );
-
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-
-            button.className =
-                "size-button";
-
-
-            button.textContent =
-                size;
-
-
-            button.dataset.size =
-                size;
-
-
-            if (stock <= 0) {
-
-                button.disabled =
-                    true;
-
-                button.title =
-                    "Out of stock";
-
-            } else {
-
-                button.onclick =
-                    function() {
-
-                        selectVariant(
-                            variant
-                        );
-
-                    };
-
-            }
-
-
-            container.appendChild(
-                button
-            );
-
-        }
-    );
-
+function showError(message){
+  document.getElementById("page").innerHTML=`<div class="message"><h2>Unable to load product</h2><p style="margin-top:15px;">${escapeHTML(message)}</p><p style="margin-top:20px;"><a href="index.html">Back to Shop</a></p></div>`;
 }
 
+function renderProduct(product){
+  const page=document.getElementById("page");
+  const images=[product.MainImage,product.BackImage,product.SideImage,product.SleeveImage,product.CollarImage,product.ModelImage].filter(x=>x&&String(x).trim()!=="");
+  if(!images.length)images.push("");
 
-/* =====================================
-   SELECT VARIANT
-===================================== */
-
-function selectVariant(variant) {
-
-    selectedVariant =
-        variant;
-
-
-    quantity = 1;
-
-
-    /*
-     * Highlight selected size.
-     */
-
-    document.querySelectorAll(
-        ".size-button"
-    ).forEach(
-        button => {
-
-            button.classList.remove(
-                "selected"
-            );
-
-
-            if (
-                button.dataset.size
-                ===
-                String(
-                    variant.Size
-                )
-            ) {
-
-                button.classList.add(
-                    "selected"
-                );
-
-            }
-
-        }
-    );
-
-
-    /*
-     * Update price.
-     */
-
-    const price =
-        Number(
-            variant.Price
-        );
-
-
-    document.getElementById(
-        "productPrice"
-    ).textContent =
-        "₹" +
-        formatMoney(
-            price
-        );
-
-
-    /*
-     * Update compare price.
-     */
-
-    const compare =
-        Number(
-            variant.ComparePrice
-        );
-
-
-    document.getElementById(
-        "comparePrice"
-    ).textContent =
-        compare > 0
-        ?
-        "₹" +
-        formatMoney(
-            compare
-        )
-        :
-        "";
-
-
-    /*
-     * Update quantity.
-     */
-
-    document.getElementById(
-        "quantity"
-    ).textContent =
-        quantity;
-
-
-    /*
-     * Stock message.
-     */
-
-    document.getElementById(
-        "stockMessage"
-    ).textContent =
-        stockMessage(
-            Number(
-                variant.Stock
-            )
-        );
-
-
-    /*
-     * Enable buttons.
-     */
-
-    const addButton =
-        document.getElementById(
-            "addCartButton"
-        );
-
-
-    const buyButton =
-        document.getElementById(
-            "buyNowButton"
-        );
-
-
-    addButton.disabled =
-        false;
-
-
-    buyButton.disabled =
-        false;
-
-
-    addButton.textContent =
-        "ADD TO CART";
-
-
-    buyButton.textContent =
-        "BUY NOW";
-
-
-    updateQuantityButtons();
-
+  page.innerHTML=`
+  <div class="product-container">
+    <div class="gallery">
+      <div class="main-image">${images[0]?`<img id="mainProductImage" src="${escapeHTML(images[0])}" alt="${escapeHTML(product.ProductName||"Product")}">`:`<span>Product Image</span>`}</div>
+      <div class="thumbnail-container">${images.map((im,i)=>im?`<div class="thumbnail ${i===0?"active":""}" onclick="changeImage('${escapeJS(im)}',this)"><img src="${escapeHTML(im)}" alt="Product view"></div>`:"").join("")}</div>
+    </div>
+    <div class="product-info">
+      <div class="category">${escapeHTML(product.Category||"")}</div>
+      <h1 class="product-title">${escapeHTML(product.ProductName||"")}</h1>
+      <div class="price-row"><span class="price" id="productPrice">₹${formatMoney(product.Price)}</span><span class="compare-price" id="comparePrice">${Number(product.ComparePrice||0)>0?"₹"+formatMoney(product.ComparePrice):""}</span></div>
+      <div class="description">${escapeHTML(product.Description||"")}</div>
+      <div class="option"><div class="option-title">Colour</div><div class="color-value">${escapeHTML(product.Color||product.ColorCode||"Navy Blue")}</div></div>
+      <div class="option"><div class="option-title">Size</div><div id="sizeButtons" class="size-buttons"></div><div id="stockMessage" class="stock-message">Select a size.</div></div>
+      <div class="option"><div class="option-title">Quantity</div><div class="quantity-box"><button id="minusButton" onclick="decreaseQuantity()">−</button><span id="quantity">1</span><button id="plusButton" onclick="increaseQuantity()">+</button></div></div>
+      <div class="actions"><button id="addCartButton" class="add-cart" onclick="handleAddToCart()" disabled>SELECT SIZE</button><button id="buyNowButton" class="buy-now" onclick="handleBuyNow()" disabled>SELECT SIZE</button></div>
+    </div>
+  </div>
+  <div class="details"><div class="detail-box"><h2>Product Details</h2><p>${escapeHTML(product.Description||"Premium quality product designed for everyday comfort and style.")}</p>${product.Material?`<p style="margin-top:15px;"><strong>Material:</strong> ${escapeHTML(product.Material)}</p>`:""}${product.Gender?`<p><strong>Gender:</strong> ${escapeHTML(product.Gender)}</p>`:""}</div></div>`;
+  renderVariants();
 }
 
+function renderVariants(){
+  const c=document.getElementById("sizeButtons");if(!c)return;c.innerHTML="";
+  if(!variants.length){c.innerHTML="<span>No sizes available.</span>";document.getElementById("stockMessage").textContent="No active sizes are available.";return;}
 
-/* =====================================
-   STOCK MESSAGE
-===================================== */
+  const order=["XS","S","M","L","XL","XXL","3XL","4XL","5XL"],sizes=[];
+  variants.forEach(v=>{if(v.Size&&!sizes.includes(v.Size))sizes.push(v.Size);});
+  sizes.sort((a,b)=>{const ai=order.indexOf(a.toUpperCase()),bi=order.indexOf(b.toUpperCase());if(ai>=0&&bi>=0)return ai-bi;if(ai>=0)return-1;if(bi>=0)return 1;return a.localeCompare(b);});
 
-function stockMessage(stock) {
-
-    if (stock <= 0) {
-
-        return "Out of stock.";
-
-    }
-
-
-    if (stock <= 5) {
-
-        return (
-            "Only " +
-            stock +
-            " left in stock."
-        );
-
-    }
-
-
-    return (
-        stock +
-        " available."
-    );
-
+  sizes.forEach(size=>{
+    const group=variants.filter(v=>v.Size.toUpperCase()===size.toUpperCase());
+    const v=group.find(x=>x.Stock>0)||group[0],stock=Number(v.Stock||0);
+    const b=document.createElement("button");b.type="button";b.className="size-button";b.textContent=size;b.dataset.size=size;
+    if(stock<=0){b.disabled=true;b.title="Out of stock";}else b.onclick=()=>selectVariant(v);
+    c.appendChild(b);
+  });
 }
 
+function selectVariant(v){
+  selectedVariant=v;quantity=1;
+  document.querySelectorAll(".size-button").forEach(b=>b.classList.toggle("selected",b.dataset.size.toUpperCase()===String(v.Size).toUpperCase()));
+  document.getElementById("productPrice").textContent="₹"+formatMoney(v.Price);
+  document.getElementById("comparePrice").textContent=Number(v.ComparePrice)>0?"₹"+formatMoney(v.ComparePrice):"";
+  document.getElementById("quantity").textContent=quantity;
+  document.getElementById("stockMessage").textContent=stockMessage(v.Stock);
+  const ok=Number(v.Stock)>0;
+  const a=document.getElementById("addCartButton"),b=document.getElementById("buyNowButton");
+  a.disabled=!ok;b.disabled=!ok;a.textContent=ok?"ADD TO CART":"OUT OF STOCK";b.textContent=ok?"BUY NOW":"OUT OF STOCK";
+  updateQuantityButtons();
+}
+function stockMessage(s){return s<=0?"Out of stock.":s<=5?"Only "+s+" left in stock.":s+" available.";}
+function increaseQuantity(){if(!selectedVariant)return;const s=Number(selectedVariant.Stock||0);if(quantity<s)quantity++;document.getElementById("quantity").textContent=quantity;updateQuantityButtons();}
+function decreaseQuantity(){if(quantity>1)quantity--;document.getElementById("quantity").textContent=quantity;updateQuantityButtons();}
+function updateQuantityButtons(){const m=document.getElementById("minusButton"),p=document.getElementById("plusButton");if(!m||!p)return;if(!selectedVariant){m.disabled=p.disabled=true;return;}const s=Number(selectedVariant.Stock||0);m.disabled=quantity<=1;p.disabled=quantity>=s;}
 
-/* =====================================
-   QUANTITY
-===================================== */
-
-function increaseQuantity() {
-
-    if (!selectedVariant) return;
-
-
-    const stock =
-        Number(
-            selectedVariant.Stock || 0
-        );
-
-
-    if (quantity < stock) {
-
-        quantity++;
-
-    }
-
-
-    document.getElementById(
-        "quantity"
-    ).textContent =
-        quantity;
-
-
-    updateQuantityButtons();
-
+function handleAddToCart(){
+  if(!selectedVariant){alert("Please select a size.");return;}
+  const stock=Number(selectedVariant.Stock||0);if(stock<=0){alert("This size is out of stock.");return;}
+  const existing=cart.find(i=>String(i.ProductID)===String(currentProduct.ProductID)&&String(i.VariantID)===String(selectedVariant.VariantID));
+  if(existing){if(Number(existing.quantity)+quantity>stock){alert("Only "+stock+" available.");return;}existing.quantity=Number(existing.quantity)+quantity;}
+  else cart.push({
+    ProductID:currentProduct.ProductID,VariantID:selectedVariant.VariantID,SKU:selectedVariant.SKU,
+    ProductName:currentProduct.ProductName,Color:currentProduct.Color||selectedVariant.ColorCode||"",
+    ColorCode:selectedVariant.ColorCode||"",Size:selectedVariant.Size,Price:Number(selectedVariant.Price||0),
+    ComparePrice:Number(selectedVariant.ComparePrice||0),Stock:stock,
+    Image:currentProduct.MainImage||selectedVariant.Image||"",quantity:quantity
+  });
+  localStorage.setItem("urbnvybe_cart",JSON.stringify(cart));updateCartCount();
+  alert(currentProduct.ProductName+" ("+selectedVariant.Size+") added to cart!");
 }
 
-
-function decreaseQuantity() {
-
-    if (quantity > 1) {
-
-        quantity--;
-
-    }
-
-
-    document.getElementById(
-        "quantity"
-    ).textContent =
-        quantity;
-
-
-    updateQuantityButtons();
-
+function handleBuyNow(){
+  if(!selectedVariant){alert("Please select a size.");return;}
+  handleAddToCart();
+  setTimeout(()=>window.location.href="cart.html",100);
 }
-
-
-function updateQuantityButtons() {
-
-    if (!selectedVariant) return;
-
-
-    const stock =
-        Number(
-            selectedVariant.Stock || 0
-        );
-
-
-    document.getElementById(
-        "minusButton"
-    ).disabled =
-        quantity <= 1;
-
-
-    document.getElementById(
-        "plusButton"
-    ).disabled =
-        quantity >= stock;
-
-}
-
-
-/* =====================================
-   ADD TO CART
-===================================== */
-
-function handleAddToCart() {
-
-    if (!selectedVariant) {
-
-        alert(
-            "Please select a size."
-        );
-
-        return;
-
-    }
-
-
-    const stock =
-        Number(
-            selectedVariant.Stock || 0
-        );
-
-
-    if (stock <= 0) {
-
-        alert(
-            "This size is out of stock."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * IMPORTANT:
-     *
-     * Cart identity is ProductID +
-     * VariantID.
-     */
-
-    const existing =
-        cart.find(
-            item =>
-                String(
-                    item.ProductID
-                )
-                ===
-                String(
-                    currentProduct.ProductID
-                )
-                &&
-                String(
-                    item.VariantID
-                )
-                ===
-                String(
-                    selectedVariant.VariantID
-                )
-        );
-
-
-    if (existing) {
-
-        const newQuantity =
-            existing.quantity +
-            quantity;
-
-
-        if (
-            newQuantity >
-            stock
-        ) {
-
-            alert(
-                "Only " +
-                stock +
-                " available."
-            );
-
-            return;
-
-        }
-
-
-        existing.quantity =
-            newQuantity;
-
-    } else {
-
-        cart.push({
-
-            ProductID:
-                currentProduct.ProductID,
-
-            VariantID:
-                selectedVariant.VariantID,
-
-            SKU:
-                selectedVariant.SKU,
-
-            ProductName:
-                currentProduct.ProductName,
-
-            Color:
-                currentProduct.Color ||
-                selectedVariant.ColorCode ||
-                "",
-
-            ColorCode:
-                selectedVariant.ColorCode ||
-                "",
-
-            Size:
-                selectedVariant.Size,
-
-            Price:
-                Number(
-                    selectedVariant.Price
-                ) || 0,
-
-            ComparePrice:
-                Number(
-                    selectedVariant.ComparePrice
-                ) || 0,
-
-            Stock:
-                stock,
-
-            Image:
-                currentProduct.MainImage ||
-                selectedVariant.Image ||
-                "",
-
-            quantity:
-                quantity
-
-        });
-
-    }
-
-
-    localStorage.setItem(
-        "urbnvybe_cart",
-        JSON.stringify(cart)
-    );
-
-
-    updateCartCount();
-
-
-    alert(
-        currentProduct.ProductName +
-        " (" +
-        selectedVariant.Size +
-        ") added to cart!"
-    );
-
-}
-
-
-/* =====================================
-   BUY NOW
-===================================== */
-
-function handleBuyNow() {
-
-    if (!selectedVariant) {
-
-        alert(
-            "Please select a size."
-        );
-
-        return;
-
-    }
-
-
-    handleAddToCart();
-
-
-    /*
-     * Checkout page will be
-     * connected later.
-     */
-
-}
-
-
-/* =====================================
-   SHOW CART
-===================================== */
-
-function showCart() {
-
-    if (cart.length === 0) {
-
-        alert(
-            "Your cart is empty."
-        );
-
-        return;
-
-    }
-
-
-    let message =
-        "YOUR CART\n\n";
-
-
-    let total = 0;
-
-
-    cart.forEach(
-        item => {
-
-            const itemTotal =
-                Number(item.Price) *
-                Number(item.quantity);
-
-
-            total +=
-                itemTotal;
-
-
-            message +=
-
-                item.ProductName +
-
-                "\nSize: " +
-                item.Size +
-
-                "\nSKU: " +
-                item.SKU +
-
-                "\nQty: " +
-                item.quantity +
-
-                " = ₹" +
-
-                itemTotal +
-
-                "\n\n";
-
-        }
-    );
-
-
-    message +=
-        "TOTAL: ₹" +
-        total;
-
-
-    alert(
-        message
-    );
-
-}
-
-
-/* =====================================
-   IMAGE CHANGE
-===================================== */
-
-function changeImage(
-    image,
-    thumbnail
-) {
-
-    const main =
-        document.getElementById(
-            "mainProductImage"
-        );
-
-
-    if (main) {
-
-        main.src =
-            image;
-
-    }
-
-
-    document.querySelectorAll(
-        ".thumbnail"
-    ).forEach(
-        item =>
-            item.classList.remove(
-                "active"
-            )
-    );
-
-
-    thumbnail.classList.add(
-        "active"
-    );
-
-}
-
-
-/* =====================================
-   FORMAT MONEY
-===================================== */
-
-function formatMoney(value) {
-
-    const number =
-        Number(value || 0);
-
-
-    return number.toLocaleString(
-        "en-IN"
-    );
-
-}
-
-
-/* =====================================
-   HTML ESCAPE
-===================================== */
-
-function escapeHTML(value) {
-
-    return String(
-        value || ""
-    )
-
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-
-    .replace(
-        /</g,
-        "&lt;"
-    )
-
-    .replace(
-        />/g,
-        "&gt;"
-    )
-
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-
-    .replace(
-        /'/g,
-        "&#039;"
-    );
-
-}
-
-
-/* =====================================
-   JAVASCRIPT STRING ESCAPE
-===================================== */
-
-function escapeJS(value) {
-
-    return String(
-        value || ""
-    )
-
-    .replace(
-        /\\/g,
-        "\\\\"
-    )
-
-    .replace(
-        /'/g,
-        "\\'"
-    )
-
-    .replace(
-        /"/g,
-        '\\"'
-    )
-
-    .replace(
-        /\r?\n/g,
-        "\\n"
-    );
-
-}
-
-
-/* =====================================
-   START
-===================================== */
+function showCart(){window.location.href="cart.html";}
+function changeImage(image,thumb){const m=document.getElementById("mainProductImage");if(m)m.src=image;document.querySelectorAll(".thumbnail").forEach(x=>x.classList.remove("active"));thumb.classList.add("active");}
+function formatMoney(v){return Number(v||0).toLocaleString("en-IN");}
+function escapeHTML(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+function escapeJS(v){return String(v||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\r?\n/g,"\\n");}
 
 updateCartCount();
-
 loadProduct();
-
-
 </script>
 
 </body>
