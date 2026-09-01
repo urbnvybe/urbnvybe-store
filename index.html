@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>URBNVYBE Store</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f7f7f7;
+            color: #222;
+        }
+
+        header {
+            background: #111;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .product {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .product h3 {
+            margin-top: 0;
+        }
+
+        .price {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .old-price {
+            color: #888;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
+
+        .status {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>URBNVYBE</h1>
+    <p>Premium Everyday Wear</p>
+</header>
+
+<div class="container">
+
+    <h2>Our Products</h2>
+
+    <div id="products">
+        <div class="status">
+            Loading products...
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbzzW9XtaXrMbm2YS1CFpoBu4tz2h2huBGNwmybtB36OFC3HQ02A7EoXhHZFmf-5O2ohFQ/exec?action=products";
+
+
+async function loadProducts() {
+
+    const productsContainer =
+        document.getElementById("products");
+
+    try {
+
+        const response = await fetch(API_URL);
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || "API error");
+        }
+
+        if (!data.products || data.products.length === 0) {
+
+            productsContainer.innerHTML =
+                "<div class='status'>No products available.</div>";
+
+            return;
+        }
+
+        productsContainer.innerHTML = "";
+
+        data.products.forEach(product => {
+
+            const card = document.createElement("div");
+
+            card.className = "product";
+
+            card.innerHTML = `
+
+                <h3>${product.ProductName || ""}</h3>
+
+                <p>
+                    ${product.Description || ""}
+                </p>
+
+                <div class="price">
+
+                    ₹${product.Price || 0}
+
+                    ${
+                        product.ComparePrice
+                        ? `<span class="old-price">
+                            ₹${product.ComparePrice}
+                           </span>`
+                        : ""
+                    }
+
+                </div>
+
+            `;
+
+            productsContainer.appendChild(card);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        productsContainer.innerHTML = `
+
+            <div class="status">
+
+                <h3>Unable to load products</h3>
+
+                <p>${error.message}</p>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+loadProducts();
+
+</script>
+
+</body>
+</html>
