@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product | URBNVYBE</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f7f7f7;color:#111}
+header{background:#111;color:#fff;position:sticky;top:0;z-index:100}
+.nav{max-width:1200px;margin:auto;height:70px;padding:0 20px;display:flex;align-items:center;justify-content:space-between}
+.logo{color:#fff;text-decoration:none;font-size:25px;font-weight:800;letter-spacing:3px}
+.nav-right{display:flex;gap:25px;align-items:center}
+.nav-right a{color:#fff;text-decoration:none;font-size:14px}
+.product-container{max-width:1200px;margin:50px auto;padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:60px}
+.gallery{background:#fff;border-radius:10px;padding:20px;box-shadow:0 5px 20px rgba(0,0,0,.06)}
+.main-image{width:100%;aspect-ratio:1/1;background:#f3f3f3;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.main-image img{width:100%;height:100%;object-fit:contain}
+.thumbnail-container{display:flex;gap:10px;margin-top:15px;overflow-x:auto}
+.thumbnail{width:75px;height:75px;flex-shrink:0;border:2px solid transparent;border-radius:5px;overflow:hidden;cursor:pointer;background:#eee}
+.thumbnail.active{border-color:#111}
+.thumbnail img{width:100%;height:100%;object-fit:cover}
+.product-info{padding-top:10px}
+.category{color:#777;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.product-title{font-size:38px;line-height:1.1;margin-bottom:15px}
+.description{color:#555;line-height:1.7;margin:20px 0}
+.price-row{display:flex;align-items:center;gap:12px;margin:20px 0}
+.price{font-size:30px;font-weight:800}
+.compare-price{color:#999;text-decoration:line-through;font-size:18px}
+.option{margin:25px 0}
+.option-title{font-weight:700;margin-bottom:10px}
+.size-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.size-button{min-width:50px;padding:11px 15px;background:#fff;border:1px solid #ccc;cursor:pointer;border-radius:4px;font-weight:600}
+.size-button:hover:not(:disabled){border-color:#111}
+.size-button.selected{background:#111;color:#fff;border-color:#111}
+.size-button:disabled{background:#eee;color:#999;border-color:#ddd;cursor:not-allowed;text-decoration:line-through}
+.stock-message{margin-top:10px;font-size:13px;color:#555}
+.quantity-box{display:flex;align-items:center;width:fit-content;border:1px solid #ccc;background:#fff;border-radius:4px;overflow:hidden}
+.quantity-box button{width:42px;height:42px;border:0;background:#fff;font-size:20px;cursor:pointer}
+.quantity-box button:disabled{color:#aaa;cursor:not-allowed}
+.quantity-box span{width:45px;text-align:center;font-weight:bold}
+.actions{display:flex;gap:10px;margin-top:25px}
+.add-cart,.buy-now{flex:1;padding:15px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:15px}
+.add-cart{background:#fff;color:#111;border:1px solid #111}
+.buy-now{background:#111;color:#fff;border:1px solid #111}
+.add-cart:disabled,.buy-now:disabled{opacity:.5;cursor:not-allowed}
+.details{max-width:1200px;margin:0 auto 60px;padding:0 20px}
+.detail-box{background:#fff;padding:30px;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,.05)}
+.detail-box h2{margin-bottom:15px}
+.detail-box p{color:#555;line-height:1.7}
+.message{text-align:center;padding:100px 20px}
+@media(max-width:800px){
+  .product-container{grid-template-columns:1fr;gap:30px}
+  .product-title{font-size:30px}
+  .actions{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <a href="index.html" class="logo">URBNVYBE</a>
+    <div class="nav-right">
+      <a href="index.html">SHOP</a>
+      <a href="cart.html">🛒 Cart (<span id="cartCount">0</span>)</a>
+    </div>
+  </div>
+</header>
+
+<div id="page"><div class="message">Loading product...</div></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyo1cxZFeA3uN13nY02kPUITiatINQOJ8KbzGecmVWxXKbhG3cSVfE9OZNTE_C_SyITuQ/exec";
+const params = new URLSearchParams(window.location.search);
+const productId = params.get("id");
+
+let cart = JSON.parse(localStorage.getItem("urbnvybe_cart") || "[]");
+let currentProduct = null;
+let variants = [];
+let selectedVariant = null;
+let quantity = 1;
+
+function updateCartCount() {
+  const count = cart.reduce((t, i) => t + Number(i.quantity || 0), 0);
+  const el = document.getElementById("cartCount");
+  if (el) el.textContent = count;
+}
+
+function escapeHTML(v) {
+  return String(v || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+function formatMoney(v) {
+  return Number(v || 0).toLocaleString("en-IN");
+}
+
+async function loadProduct() {
+  if (!productId) {
+    showError("Product ID is missing.");
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL + "?action=products");
+    const data = await res.json();
+
+    if (!data.success) throw new Error(data.error || "Unable to load products");
+
+    const product = (data.products || []).find(p => String(p.ProductID) === String(productId));
+    if (!product) throw new Error("Product not found.");
+
+    currentProduct = product;
+    variants = (product.variants || []).filter(v => {
+      const status = String(v.Status || "").toLowerCase();
+      return status === "" || status === "active";
+    });
+
+    document.title = (product.ProductName || "Product") + " | URBNVYBE";
+    renderProduct(product);
+  } catch (err) {
+    console.error(err);
+    showError(err.message || "Unable to load product.");
+  }
+}
+
+function showError(msg) {
+  document.getElementById("page").innerHTML = `
+    <div class="message">
+      <h2>Unable to load product</h2>
+      <p style="margin-top:15px">${escapeHTML(msg)}</p>
+      <p style="margin-top:20px"><a href="index.html">Back to Shop</a></p>
+    </div>`;
+}
+
+function renderProduct(product) {
+  const images = [
+    product.MainImage, product.BackImage, product.SideImage,
+    product.SleeveImage, product.CollarImage, product.ModelImage
+  ].filter(Boolean);
+
+  if (!images.length) images.push("");
+
+  document.getElementById("page").innerHTML = `
+    <div class="product-container">
+      <div class="gallery">
+        <div class="main-image">
+          ${images[0] ? `<img id="mainProductImage" src="${escapeHTML(images[0])}" alt="${escapeHTML(product.ProductName)}">` : "<span>No Image</span>"}
+        </div>
+        <div class="thumbnail-container">
+          ${images.map((img, i) => img ? `
+            <div class="thumbnail ${i === 0 ? "active" : ""}" onclick="changeImage('${escapeHTML(img)}', this)">
+              <img src="${escapeHTML(img)}" alt="view">
+            </div>` : "").join("")}
+        </div>
+      </div>
+
+      <div class="product-info">
+        <div class="category">${escapeHTML(product.Category || "")}</div>
+        <h1 class="product-title">${escapeHTML(product.ProductName || "")}</h1>
+        <div class="price-row">
+          <span class="price" id="productPrice">₹${formatMoney(product.Price)}</span>
+          <span class="compare-price" id="comparePrice">${product.ComparePrice ? "₹" + formatMoney(product.ComparePrice) : ""}</span>
+        </div>
+        <div class="description">${escapeHTML(product.Description || "")}</div>
+
+        <div class="option">
+          <div class="option-title">Size</div>
+          <div id="sizeButtons" class="size-buttons"></div>
+          <div id="stockMessage" class="stock-message">Select a size</div>
+        </div>
+
+        <div class="option">
+          <div class="option-title">Quantity</div>
+          <div class="quantity-box">
+            <button id="minusButton" onclick="decreaseQuantity()">−</button>
+            <span id="quantity">1</span>
+            <button id="plusButton" onclick="increaseQuantity()">+</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="addCartButton" class="add-cart" onclick="handleAddToCart()" disabled>SELECT SIZE</button>
+          <button id="buyNowButton" class="buy-now" onclick="handleBuyNow()" disabled>SELECT SIZE</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="detail-box">
+        <h2>Product Details</h2>
+        <p>${escapeHTML(product.Description || "Premium quality product.")}</p>
+        ${product.Material ? `<p style="margin-top:15px"><strong>Material:</strong> ${escapeHTML(product.Material)}</p>` : ""}
+        ${product.Gender ? `<p><strong>Gender:</strong> ${escapeHTML(product.Gender)}</p>` : ""}
+      </div>
+    </div>`;
+
+  renderVariants();
+}
+
+function renderVariants() {
+  const container = document.getElementById("sizeButtons");
+  const message = document.getElementById("stockMessage");
+  container.innerHTML = "";
+
+  if (!variants.length) {
+    container.innerHTML = "<span>No sizes available</span>";
+    message.textContent = "No active variants found.";
+    return;
+  }
+
+  const uniqueSizes = [];
+  variants.forEach(v => {
+    const size = String(v.Size || "").trim();
+    if (size && !uniqueSizes.includes(size)) uniqueSizes.push(size);
+  });
+
+  uniqueSizes.forEach(size => {
+    const sizeVariants = variants.filter(v => String(v.Size).trim() === size);
+    const variant = sizeVariants.find(v => Number(v.Stock) > 0) || sizeVariants[0];
+    const stock = Number(variant.Stock || 0);
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "size-button";
+    btn.textContent = size;
+    btn.dataset.size = size;
+
+    if (stock <= 0) {
+      btn.disabled = true;
+      btn.title = "Out of stock";
+    } else {
+      btn.onclick = () => selectVariant(variant);
+    }
+    container.appendChild(btn);
+  });
+}
+
+function selectVariant(variant) {
+  selectedVariant = variant;
+  quantity = 1;
+
+  document.querySelectorAll(".size-button").forEach(btn => {
+    btn.classList.toggle("selected", btn.dataset.size === String(variant.Size));
+  });
+
+  document.getElementById("productPrice").textContent = "₹" + formatMoney(variant.Price);
+  document.getElementById("comparePrice").textContent = variant.ComparePrice ? "₹" + formatMoney(variant.ComparePrice) : "";
+  document.getElementById("quantity").textContent = 1;
+  document.getElementById("stockMessage").textContent = stockMessage(Number(variant.Stock));
+
+  const addBtn = document.getElementById("addCartButton");
+  const buyBtn = document.getElementById("buyNowButton");
+  addBtn.disabled = false;
+  buyBtn.disabled = false;
+  addBtn.textContent = "ADD TO CART";
+  buyBtn.textContent = "BUY NOW";
+  updateQuantityButtons();
+}
+
+function stockMessage(stock) {
+  if (stock <= 0) return "Out of stock";
+  if (stock <= 5) return "Only " + stock + " left in stock";
+  return stock + " available";
+}
+
+function increaseQuantity() {
+  if (!selectedVariant) return;
+  const stock = Number(selectedVariant.Stock || 0);
+  if (quantity < stock) quantity++;
+  document.getElementById("quantity").textContent = quantity;
+  updateQuantityButtons();
+}
+
+function decreaseQuantity() {
+  if (quantity > 1) quantity--;
+  document.getElementById("quantity").textContent = quantity;
+  updateQuantityButtons();
+}
+
+function updateQuantityButtons() {
+  if (!selectedVariant) return;
+  const stock = Number(selectedVariant.Stock || 0);
+  document.getElementById("minusButton").disabled = quantity <= 1;
+  document.getElementById("plusButton").disabled = quantity >= stock;
+}
+
+function handleAddToCart() {
+  if (!selectedVariant) {
+    alert("Please select a size");
+    return;
+  }
+
+  const stock = Number(selectedVariant.Stock || 0);
+  if (stock <= 0) {
+    alert("This size is out of stock");
+    return;
+  }
+
+  const existing = cart.find(item =>
+    String(item.ProductID) === String(currentProduct.ProductID) &&
+    String(item.VariantID) === String(selectedVariant.VariantID)
+  );
+
+  if (existing) {
+    const newQty = Number(existing.quantity) + quantity;
+    if (newQty > stock) {
+      alert("Only " + stock + " available");
+      return;
+    }
+    existing.quantity = newQty;
+  } else {
+    cart.push({
+      ProductID: currentProduct.ProductID,
+      VariantID: selectedVariant.VariantID,
+      SKU: selectedVariant.SKU || "",
+      ProductName: currentProduct.ProductName,
+      ColorCode: selectedVariant.ColorCode || "",
+      Size: selectedVariant.Size,
+      Price: Number(selectedVariant.Price) || 0,
+      ComparePrice: Number(selectedVariant.ComparePrice) || 0,
+      Stock: stock,
+      Image: currentProduct.MainImage || selectedVariant.Image || "",
+      quantity: quantity
+    });
+  }
+
+  localStorage.setItem("urbnvybe_cart", JSON.stringify(cart));
+  updateCartCount();
+  alert(currentProduct.ProductName + " (" + selectedVariant.Size + ") added to cart!");
+}
+
+function handleBuyNow() {
+  handleAddToCart();
+  window.location.href = "checkout.html";
+}
+
+function changeImage(src, thumb) {
+  const main = document.getElementById("mainProductImage");
+  if (main) main.src = src;
+  document.querySelectorAll(".thumbnail").forEach(t => t.classList.remove("active"));
+  if (thumb) thumb.classList.add("active");
+}
+
+updateCartCount();
+loadProduct();
+</script>
+</body>
+</html>
