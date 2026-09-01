@@ -2,389 +2,476 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Product | URBNVYBE</title>
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f7f7f7;
-            color: #111;
-        }
-
-        /* =========================
-           HEADER
-        ========================= */
-
-        header {
-            background: #111;
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .nav {
-            max-width: 1200px;
-            margin: auto;
-            height: 70px;
-            padding: 0 20px;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            color: white;
-            text-decoration: none;
-
-            font-size: 25px;
-            font-weight: 800;
-            letter-spacing: 3px;
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 25px;
-            align-items: center;
-        }
-
-        .nav-right a {
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .cart {
-            cursor: pointer;
-        }
-
-        /* =========================
-           PRODUCT
-        ========================= */
-
-        .product-container {
-            max-width: 1200px;
-            margin: 50px auto;
-            padding: 0 20px;
-
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-        }
-
-        /* =========================
-           GALLERY
-        ========================= */
-
-        .gallery {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-
-            box-shadow:
-                0 5px 20px rgba(0,0,0,.06);
-        }
-
-        .main-image {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
 
-            background: #f3f3f3;
-            border-radius: 8px;
-            overflow: hidden;
-        }
+<meta charset="UTF-8">
 
-        .main-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-        .thumbnail-container {
-            display: flex;
-            gap: 10px;
+<title>Product | URBNVYBE</title>
 
-            margin-top: 15px;
+<style>
 
-            overflow-x: auto;
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        .thumbnail {
-            width: 75px;
-            height: 75px;
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f7f7f7;
+    color: #111;
+}
 
-            flex-shrink: 0;
+/* =========================
+   HEADER
+========================= */
 
-            border: 2px solid transparent;
-            border-radius: 5px;
+header {
+    background: #111;
+    color: white;
 
-            overflow: hidden;
-            cursor: pointer;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
 
-            background: #eee;
-        }
+.nav {
+    max-width: 1200px;
+    margin: auto;
 
-        .thumbnail.active {
-            border-color: #111;
-        }
+    height: 70px;
 
-        .thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    padding: 0 20px;
 
-        /* =========================
-           PRODUCT INFO
-        ========================= */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
-        .product-info {
-            padding-top: 10px;
-        }
+.logo {
+    color: white;
+    text-decoration: none;
 
-        .category {
-            color: #777;
+    font-size: 25px;
+    font-weight: 800;
 
-            font-size: 13px;
-            text-transform: uppercase;
+    letter-spacing: 3px;
+}
 
-            letter-spacing: 1px;
+.nav-right {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
 
-            margin-bottom: 12px;
-        }
+.nav-right a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
 
-        .product-title {
-            font-size: 38px;
-            line-height: 1.1;
+.cart {
+    cursor: pointer;
+}
 
-            margin-bottom: 15px;
-        }
+/* =========================
+   PRODUCT
+========================= */
 
-        .description {
-            color: #555;
+.product-container {
+    max-width: 1200px;
 
-            line-height: 1.7;
+    margin: 50px auto;
 
-            margin: 20px 0;
-        }
+    padding: 0 20px;
 
-        /* =========================
-           PRICE
-        ========================= */
+    display: grid;
 
-        .price-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+    grid-template-columns:
+        1fr 1fr;
 
-            margin: 20px 0;
-        }
+    gap: 60px;
+}
 
-        .price {
-            font-size: 30px;
-            font-weight: 800;
-        }
+/* =========================
+   GALLERY
+========================= */
 
-        .compare-price {
-            color: #999;
-            text-decoration: line-through;
-            font-size: 18px;
-        }
+.gallery {
+    background: white;
 
-        /* =========================
-           OPTIONS
-        ========================= */
+    border-radius: 10px;
 
-        .option {
-            margin: 25px 0;
-        }
+    padding: 20px;
 
-        .option-title {
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.06);
+}
 
-        .size-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+.main-image {
+    width: 100%;
 
-        .size-button {
-            min-width: 50px;
+    aspect-ratio: 1 / 1;
 
-            padding: 11px 15px;
+    background: #f3f3f3;
 
-            background: white;
-            border: 1px solid #ccc;
+    border-radius: 8px;
 
-            cursor: pointer;
-            border-radius: 4px;
-        }
+    overflow: hidden;
 
-        .size-button:hover,
-        .size-button.selected {
-            background: #111;
-            color: white;
-            border-color: #111;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .color-value {
-            font-weight: 600;
-        }
+.main-image img {
+    width: 100%;
+    height: 100%;
 
-        /* =========================
-           QUANTITY
-        ========================= */
+    object-fit: contain;
+}
 
-        .quantity-box {
-            display: flex;
-            align-items: center;
+.thumbnail-container {
+    display: flex;
 
-            width: fit-content;
+    gap: 10px;
 
-            border: 1px solid #ccc;
-            background: white;
+    margin-top: 15px;
 
-            border-radius: 4px;
+    overflow-x: auto;
+}
 
-            overflow: hidden;
-        }
+.thumbnail {
+    width: 75px;
+    height: 75px;
 
-        .quantity-box button {
-            width: 42px;
-            height: 42px;
+    flex-shrink: 0;
 
-            border: 0;
-            background: white;
+    border: 2px solid transparent;
 
-            font-size: 20px;
+    border-radius: 5px;
 
-            cursor: pointer;
-        }
+    overflow: hidden;
 
-        .quantity-box span {
-            width: 45px;
-            text-align: center;
-            font-weight: bold;
-        }
+    cursor: pointer;
 
-        /* =========================
-           ACTION BUTTONS
-        ========================= */
+    background: #eee;
+}
 
-        .actions {
-            display: flex;
-            gap: 10px;
+.thumbnail.active {
+    border-color: #111;
+}
 
-            margin-top: 25px;
-        }
+.thumbnail img {
+    width: 100%;
+    height: 100%;
 
-        .add-cart,
-        .buy-now {
-            flex: 1;
+    object-fit: cover;
+}
 
-            padding: 15px;
+/* =========================
+   PRODUCT INFO
+========================= */
 
-            border-radius: 4px;
+.product-info {
+    padding-top: 10px;
+}
 
-            cursor: pointer;
+.category {
+    color: #777;
 
-            font-weight: bold;
-            font-size: 15px;
-        }
+    font-size: 13px;
 
-        .add-cart {
-            background: white;
-            color: #111;
-            border: 1px solid #111;
-        }
+    text-transform: uppercase;
 
-        .buy-now {
-            background: #111;
-            color: white;
-            border: 1px solid #111;
-        }
+    letter-spacing: 1px;
 
-        /* =========================
-           BELOW PRODUCT
-        ========================= */
+    margin-bottom: 12px;
+}
 
-        .details {
-            max-width: 1200px;
-            margin: 0 auto 60px;
-            padding: 0 20px;
-        }
+.product-title {
+    font-size: 38px;
 
-        .detail-box {
-            background: white;
-            padding: 30px;
+    line-height: 1.1;
 
-            border-radius: 10px;
+    margin-bottom: 15px;
+}
 
-            box-shadow:
-                0 5px 20px rgba(0,0,0,.05);
-        }
+.description {
+    color: #555;
 
-        .detail-box h2 {
-            margin-bottom: 15px;
-        }
+    line-height: 1.7;
 
-        .detail-box p {
-            color: #555;
-            line-height: 1.7;
-        }
+    margin: 20px 0;
+}
 
-        /* =========================
-           LOADING / ERROR
-        ========================= */
+/* =========================
+   PRICE
+========================= */
 
-        .message {
-            text-align: center;
-            padding: 100px 20px;
-        }
+.price-row {
+    display: flex;
 
-        /* =========================
-           MOBILE
-        ========================= */
+    align-items: center;
 
-        @media (max-width: 800px) {
+    gap: 12px;
 
-            .product-container {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
+    margin: 20px 0;
+}
 
-            .product-title {
-                font-size: 30px;
-            }
+.price {
+    font-size: 30px;
 
-            .product-info {
-                padding-top: 0;
-            }
+    font-weight: 800;
+}
 
-            .actions {
-                flex-direction: column;
-            }
+.compare-price {
+    color: #999;
 
-        }
+    text-decoration: line-through;
 
-    </style>
+    font-size: 18px;
+}
+
+/* =========================
+   OPTIONS
+========================= */
+
+.option {
+    margin: 25px 0;
+}
+
+.option-title {
+    font-weight: 700;
+
+    margin-bottom: 10px;
+}
+
+.size-buttons {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+}
+
+.size-button {
+    min-width: 50px;
+
+    padding: 11px 15px;
+
+    background: white;
+
+    border: 1px solid #ccc;
+
+    cursor: pointer;
+
+    border-radius: 4px;
+
+    font-weight: 600;
+}
+
+.size-button:hover:not(:disabled) {
+    border-color: #111;
+}
+
+.size-button.selected {
+    background: #111;
+    color: white;
+
+    border-color: #111;
+}
+
+.size-button:disabled {
+    background: #eee;
+
+    color: #999;
+
+    border-color: #ddd;
+
+    cursor: not-allowed;
+
+    text-decoration: line-through;
+}
+
+.stock-message {
+    margin-top: 10px;
+
+    font-size: 13px;
+
+    color: #555;
+}
+
+/* =========================
+   QUANTITY
+========================= */
+
+.quantity-box {
+    display: flex;
+
+    align-items: center;
+
+    width: fit-content;
+
+    border: 1px solid #ccc;
+
+    background: white;
+
+    border-radius: 4px;
+
+    overflow: hidden;
+}
+
+.quantity-box button {
+    width: 42px;
+
+    height: 42px;
+
+    border: 0;
+
+    background: white;
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+.quantity-box button:disabled {
+    color: #aaa;
+
+    cursor: not-allowed;
+}
+
+.quantity-box span {
+    width: 45px;
+
+    text-align: center;
+
+    font-weight: bold;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+
+.actions {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+.add-cart,
+.buy-now {
+    flex: 1;
+
+    padding: 15px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+    font-size: 15px;
+}
+
+.add-cart {
+    background: white;
+
+    color: #111;
+
+    border: 1px solid #111;
+}
+
+.buy-now {
+    background: #111;
+
+    color: white;
+
+    border: 1px solid #111;
+}
+
+.add-cart:disabled,
+.buy-now:disabled {
+    opacity: .5;
+
+    cursor: not-allowed;
+}
+
+/* =========================
+   DETAILS
+========================= */
+
+.details {
+    max-width: 1200px;
+
+    margin: 0 auto 60px;
+
+    padding: 0 20px;
+}
+
+.detail-box {
+    background: white;
+
+    padding: 30px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.05);
+}
+
+.detail-box h2 {
+    margin-bottom: 15px;
+}
+
+.detail-box p {
+    color: #555;
+
+    line-height: 1.7;
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.message {
+    text-align: center;
+
+    padding: 100px 20px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 800px) {
+
+    .product-container {
+        grid-template-columns: 1fr;
+
+        gap: 30px;
+    }
+
+    .product-title {
+        font-size: 30px;
+    }
+
+    .product-info {
+        padding-top: 0;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+}
+
+</style>
 
 </head>
 
@@ -392,235 +479,124 @@
 <body>
 
 
-<!-- HEADER -->
-
 <header>
 
-    <div class="nav">
+<div class="nav">
 
-        <a href="index.html" class="logo">
-            URBNVYBE
-        </a>
+<a href="index.html"
+   class="logo">
 
-        <div class="nav-right">
+URBNVYBE
 
-            <a href="index.html">
-                SHOP
-            </a>
+</a>
 
-            <div class="cart" onclick="showCart()">
-                🛒 Cart (<span id="cartCount">0</span>)
-            </div>
+<div class="nav-right">
 
-        </div>
+<a href="index.html">
+SHOP
+</a>
 
-    </div>
+<div class="cart"
+     onclick="showCart()">
+
+🛒 Cart
+(<span id="cartCount">0</span>)
+
+</div>
+
+</div>
+
+</div>
 
 </header>
 
 
-
-<!-- PRODUCT AREA -->
-
 <div id="page">
 
-    <div class="message">
-        Loading product...
-    </div>
+<div class="message">
+
+Loading product...
 
 </div>
 
+</div>
 
 
 <script>
 
 
-/* =========================
+/* =====================================
    API
-========================= */
+===================================== */
 
 const API_URL =
 "https://script.google.com/macros/s/AKfycbzzW9XtaXrMbm2YS1CFpoBu4tz2h2huBGNwmybtB36OFC3HQ02A7EoXhHZFmf-5O2ohFQ/exec?action=products";
 
 
-/* =========================
+/* =====================================
    PRODUCT ID
-========================= */
+===================================== */
 
 const params =
-    new URLSearchParams(
-        window.location.search
-    );
+new URLSearchParams(
+    window.location.search
+);
 
 const productId =
-    params.get("id");
+params.get("id");
 
 
-/* =========================
+/* =====================================
    CART
-========================= */
+===================================== */
 
 let cart =
-    JSON.parse(
-        localStorage.getItem("urbnvybe_cart")
-    ) || [];
+JSON.parse(
+    localStorage.getItem(
+        "urbnvybe_cart"
+    )
+) || [];
 
+
+/* =====================================
+   CURRENT PRODUCT / VARIANT
+===================================== */
+
+let currentProduct = null;
+
+let variants = [];
+
+let selectedVariant = null;
+
+let quantity = 1;
+
+
+/* =====================================
+   CART COUNT
+===================================== */
 
 function updateCartCount() {
 
     const count =
         cart.reduce(
             (total, item) =>
-                total + item.quantity,
+                total +
+                Number(
+                    item.quantity || 0
+                ),
             0
         );
 
     document.getElementById(
         "cartCount"
     ).textContent = count;
-}
-
-
-function addToCart() {
-
-    if (!currentProduct) return;
-
-
-    const existing =
-        cart.find(
-            item =>
-                item.ProductID ===
-                currentProduct.ProductID
-        );
-
-
-    if (existing) {
-
-        existing.quantity += quantity;
-
-    } else {
-
-        cart.push({
-
-            ProductID:
-                currentProduct.ProductID,
-
-            ProductName:
-                currentProduct.ProductName,
-
-            Price:
-                Number(currentProduct.Price) || 0,
-
-            MainImage:
-                currentProduct.MainImage || "",
-
-            Size:
-                selectedSize,
-
-            Color:
-                currentProduct.Color || "",
-
-            quantity:
-                quantity
-
-        });
-
-    }
-
-
-    localStorage.setItem(
-        "urbnvybe_cart",
-        JSON.stringify(cart)
-    );
-
-
-    updateCartCount();
-
-
-    alert(
-        currentProduct.ProductName +
-        " added to cart!"
-    );
 
 }
 
 
-/* =========================
-   QUANTITY
-========================= */
-
-let quantity = 1;
-
-
-function increaseQuantity() {
-
-    quantity++;
-
-    document.getElementById(
-        "quantity"
-    ).textContent = quantity;
-
-}
-
-
-function decreaseQuantity() {
-
-    if (quantity > 1) {
-        quantity--;
-    }
-
-    document.getElementById(
-        "quantity"
-    ).textContent = quantity;
-
-}
-
-
-/* =========================
-   SIZE
-========================= */
-
-let selectedSize = "";
-
-
-function selectSize(size) {
-
-    selectedSize = size;
-
-    document.querySelectorAll(
-        ".size-button"
-    ).forEach(button => {
-
-        button.classList.remove(
-            "selected"
-        );
-
-        if (
-            button.dataset.size ===
-            size
-        ) {
-
-            button.classList.add(
-                "selected"
-            );
-
-        }
-
-    });
-
-}
-
-
-/* =========================
-   CURRENT PRODUCT
-========================= */
-
-let currentProduct = null;
-
-
-/* =========================
+/* =====================================
    LOAD PRODUCT
-========================= */
+===================================== */
 
 async function loadProduct() {
 
@@ -632,27 +608,9 @@ async function loadProduct() {
 
     if (!productId) {
 
-        page.innerHTML = `
-
-            <div class="message">
-
-                <h2>
-                    Product not found
-                </h2>
-
-                <p style="margin-top:15px;">
-                    No product ID was provided.
-                </p>
-
-                <p style="margin-top:20px;">
-                    <a href="index.html">
-                        Back to Shop
-                    </a>
-                </p>
-
-            </div>
-
-        `;
+        showError(
+            "Product ID is missing."
+        );
 
         return;
 
@@ -664,6 +622,7 @@ async function loadProduct() {
         const response =
             await fetch(API_URL);
 
+
         const data =
             await response.json();
 
@@ -672,7 +631,7 @@ async function loadProduct() {
 
             throw new Error(
                 data.error ||
-                "Unable to load products"
+                "Unable to load products."
             );
 
         }
@@ -684,15 +643,18 @@ async function loadProduct() {
                 item =>
                     String(
                         item.ProductID
-                    ) ===
-                    String(productId)
+                    ).trim()
+                    ===
+                    String(
+                        productId
+                    ).trim()
             );
 
 
         if (!product) {
 
             throw new Error(
-                "Product not found"
+                "Product not found."
             );
 
         }
@@ -700,6 +662,18 @@ async function loadProduct() {
 
         currentProduct =
             product;
+
+
+        variants =
+            (product.variants || [])
+            .filter(
+                variant =>
+                    String(
+                        variant.Status || ""
+                    ).toLowerCase()
+                    ===
+                    "active"
+            );
 
 
         document.title =
@@ -712,38 +686,55 @@ async function loadProduct() {
 
     } catch (error) {
 
-        page.innerHTML = `
+        console.error(error);
 
-            <div class="message">
-
-                <h2>
-                    Unable to load product
-                </h2>
-
-                <p style="margin-top:15px;">
-                    ${escapeHTML(
-                        error.message
-                    )}
-                </p>
-
-                <p style="margin-top:20px;">
-                    <a href="index.html">
-                        Back to Shop
-                    </a>
-                </p>
-
-            </div>
-
-        `;
+        showError(
+            error.message
+        );
 
     }
 
 }
 
 
-/* =========================
+/* =====================================
+   ERROR
+===================================== */
+
+function showError(message) {
+
+    document.getElementById(
+        "page"
+    ).innerHTML = `
+
+        <div class="message">
+
+            <h2>
+                Unable to load product
+            </h2>
+
+            <p style="margin-top:15px;">
+                ${escapeHTML(message)}
+            </p>
+
+            <p style="margin-top:20px;">
+
+                <a href="index.html">
+                    Back to Shop
+                </a>
+
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================
    RENDER PRODUCT
-========================= */
+===================================== */
 
 function renderProduct(product) {
 
@@ -841,7 +832,7 @@ function renderProduct(product) {
                                     : ""
                                 }"
                                 onclick="changeImage(
-                                    '${escapeHTML(image)}',
+                                    '${escapeJS(image)}',
                                     this
                                 )"
                             >
@@ -893,37 +884,35 @@ function renderProduct(product) {
 
                 <div class="price-row">
 
-                    <span class="price">
+                    <span
+                        class="price"
+                        id="productPrice"
+                    >
 
-                        ₹${Number(
-                            product.Price || 0
-                        ).toLocaleString("en-IN")}
+                        ₹${formatMoney(
+                            product.Price
+                        )}
 
                     </span>
 
 
-                    ${
-                        product.ComparePrice
+                    <span
+                        class="compare-price"
+                        id="comparePrice"
+                    >
 
-                        ?
-
-                        `
-
-                        <span class="compare-price">
-
-                            ₹${Number(
+                        ${
+                            product.ComparePrice
+                            ?
+                            "₹" +
+                            formatMoney(
                                 product.ComparePrice
-                            ).toLocaleString("en-IN")}
+                            )
+                            :
+                            ""
+                        }
 
-                        </span>
-
-                        `
-
-                        :
-
-                        ""
-
-                    }
+                    </span>
 
                 </div>
 
@@ -937,18 +926,22 @@ function renderProduct(product) {
                 </div>
 
 
-                <!-- COLOR -->
+                <!-- COLOUR -->
 
                 <div class="option">
 
                     <div class="option-title">
+
                         Colour
+
                     </div>
+
 
                     <div class="color-value">
 
                         ${escapeHTML(
                             product.Color ||
+                            product.ColorCode ||
                             "Navy Blue"
                         )}
 
@@ -962,51 +955,26 @@ function renderProduct(product) {
                 <div class="option">
 
                     <div class="option-title">
+
                         Size
+
                     </div>
 
 
-                    <div class="size-buttons">
+                    <div
+                        id="sizeButtons"
+                        class="size-buttons"
+                    >
 
-                        <button
-                            class="size-button"
-                            data-size="S"
-                            onclick="selectSize('S')"
-                        >
-                            S
-                        </button>
+                    </div>
 
-                        <button
-                            class="size-button"
-                            data-size="M"
-                            onclick="selectSize('M')"
-                        >
-                            M
-                        </button>
 
-                        <button
-                            class="size-button"
-                            data-size="L"
-                            onclick="selectSize('L')"
-                        >
-                            L
-                        </button>
+                    <div
+                        id="stockMessage"
+                        class="stock-message"
+                    >
 
-                        <button
-                            class="size-button"
-                            data-size="XL"
-                            onclick="selectSize('XL')"
-                        >
-                            XL
-                        </button>
-
-                        <button
-                            class="size-button"
-                            data-size="XXL"
-                            onclick="selectSize('XXL')"
-                        >
-                            XXL
-                        </button>
+                        Select a size.
 
                     </div>
 
@@ -1018,26 +986,38 @@ function renderProduct(product) {
                 <div class="option">
 
                     <div class="option-title">
+
                         Quantity
+
                     </div>
 
 
                     <div class="quantity-box">
 
                         <button
+                            id="minusButton"
                             onclick="decreaseQuantity()"
                         >
+
                             −
+
                         </button>
 
+
                         <span id="quantity">
+
                             1
+
                         </span>
 
+
                         <button
+                            id="plusButton"
                             onclick="increaseQuantity()"
                         >
+
                             +
+
                         </button>
 
                     </div>
@@ -1050,18 +1030,26 @@ function renderProduct(product) {
                 <div class="actions">
 
                     <button
+                        id="addCartButton"
                         class="add-cart"
                         onclick="handleAddToCart()"
+                        disabled
                     >
-                        ADD TO CART
+
+                        SELECT SIZE
+
                     </button>
 
 
                     <button
+                        id="buyNowButton"
                         class="buy-now"
                         onclick="handleBuyNow()"
+                        disabled
                     >
-                        BUY NOW
+
+                        SELECT SIZE
+
                     </button>
 
                 </div>
@@ -1082,30 +1070,37 @@ function renderProduct(product) {
                     Product Details
                 </h2>
 
+
                 <p>
 
-                    ${
-                        escapeHTML(
-                            product.Description ||
-                            "Premium quality product designed for everyday comfort and style."
-                        )
-                    }
+                    ${escapeHTML(
+                        product.Description ||
+                        "Premium quality product designed for everyday comfort and style."
+                    )}
 
                 </p>
 
-                <br>
 
                 ${
                     product.Material
 
                     ?
 
-                    `<p>
-                        <strong>Material:</strong>
+                    `
+
+                    <p style="margin-top:15px;">
+
+                        <strong>
+                            Material:
+                        </strong>
+
                         ${escapeHTML(
                             product.Material
                         )}
-                    </p>`
+
+                    </p>
+
+                    `
 
                     :
 
@@ -1113,17 +1108,27 @@ function renderProduct(product) {
 
                 }
 
+
                 ${
                     product.Gender
 
                     ?
 
-                    `<p>
-                        <strong>Gender:</strong>
+                    `
+
+                    <p>
+
+                        <strong>
+                            Gender:
+                        </strong>
+
                         ${escapeHTML(
                             product.Gender
                         )}
-                    </p>`
+
+                    </p>
+
+                    `
 
                     :
 
@@ -1137,12 +1142,686 @@ function renderProduct(product) {
 
     `;
 
+
+    renderVariants();
+
 }
 
 
-/* =========================
+/* =====================================
+   RENDER VARIANTS
+===================================== */
+
+function renderVariants() {
+
+    const container =
+        document.getElementById(
+            "sizeButtons"
+        );
+
+
+    if (!container) return;
+
+
+    container.innerHTML = "";
+
+
+    if (variants.length === 0) {
+
+        container.innerHTML = `
+
+            <span>
+                No sizes available.
+            </span>
+
+        `;
+
+        return;
+
+    }
+
+
+    /*
+     * Remove duplicate sizes.
+     */
+
+    const uniqueSizes = [];
+
+
+    variants.forEach(
+        variant => {
+
+            const size =
+                String(
+                    variant.Size || ""
+                ).trim();
+
+
+            if (
+                size &&
+                !uniqueSizes.includes(
+                    size
+                )
+            ) {
+
+                uniqueSizes.push(
+                    size
+                );
+
+            }
+
+        }
+    );
+
+
+    uniqueSizes.forEach(
+        size => {
+
+            const sizeVariants =
+                variants.filter(
+                    variant =>
+                        String(
+                            variant.Size || ""
+                        ).trim()
+                        ===
+                        size
+                );
+
+
+            /*
+             * If multiple variants have
+             * the same size, use the first
+             * available one.
+             */
+
+            const variant =
+                sizeVariants.find(
+                    item =>
+                        Number(
+                            item.Stock
+                        ) > 0
+                )
+                ||
+                sizeVariants[0];
+
+
+            const stock =
+                Number(
+                    variant.Stock || 0
+                );
+
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "size-button";
+
+
+            button.textContent =
+                size;
+
+
+            button.dataset.size =
+                size;
+
+
+            if (stock <= 0) {
+
+                button.disabled =
+                    true;
+
+                button.title =
+                    "Out of stock";
+
+            } else {
+
+                button.onclick =
+                    function() {
+
+                        selectVariant(
+                            variant
+                        );
+
+                    };
+
+            }
+
+
+            container.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================
+   SELECT VARIANT
+===================================== */
+
+function selectVariant(variant) {
+
+    selectedVariant =
+        variant;
+
+
+    quantity = 1;
+
+
+    /*
+     * Highlight selected size.
+     */
+
+    document.querySelectorAll(
+        ".size-button"
+    ).forEach(
+        button => {
+
+            button.classList.remove(
+                "selected"
+            );
+
+
+            if (
+                button.dataset.size
+                ===
+                String(
+                    variant.Size
+                )
+            ) {
+
+                button.classList.add(
+                    "selected"
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+     * Update price.
+     */
+
+    const price =
+        Number(
+            variant.Price
+        );
+
+
+    document.getElementById(
+        "productPrice"
+    ).textContent =
+        "₹" +
+        formatMoney(
+            price
+        );
+
+
+    /*
+     * Update compare price.
+     */
+
+    const compare =
+        Number(
+            variant.ComparePrice
+        );
+
+
+    document.getElementById(
+        "comparePrice"
+    ).textContent =
+        compare > 0
+        ?
+        "₹" +
+        formatMoney(
+            compare
+        )
+        :
+        "";
+
+
+    /*
+     * Update quantity.
+     */
+
+    document.getElementById(
+        "quantity"
+    ).textContent =
+        quantity;
+
+
+    /*
+     * Stock message.
+     */
+
+    document.getElementById(
+        "stockMessage"
+    ).textContent =
+        stockMessage(
+            Number(
+                variant.Stock
+            )
+        );
+
+
+    /*
+     * Enable buttons.
+     */
+
+    const addButton =
+        document.getElementById(
+            "addCartButton"
+        );
+
+
+    const buyButton =
+        document.getElementById(
+            "buyNowButton"
+        );
+
+
+    addButton.disabled =
+        false;
+
+
+    buyButton.disabled =
+        false;
+
+
+    addButton.textContent =
+        "ADD TO CART";
+
+
+    buyButton.textContent =
+        "BUY NOW";
+
+
+    updateQuantityButtons();
+
+}
+
+
+/* =====================================
+   STOCK MESSAGE
+===================================== */
+
+function stockMessage(stock) {
+
+    if (stock <= 0) {
+
+        return "Out of stock.";
+
+    }
+
+
+    if (stock <= 5) {
+
+        return (
+            "Only " +
+            stock +
+            " left in stock."
+        );
+
+    }
+
+
+    return (
+        stock +
+        " available."
+    );
+
+}
+
+
+/* =====================================
+   QUANTITY
+===================================== */
+
+function increaseQuantity() {
+
+    if (!selectedVariant) return;
+
+
+    const stock =
+        Number(
+            selectedVariant.Stock || 0
+        );
+
+
+    if (quantity < stock) {
+
+        quantity++;
+
+    }
+
+
+    document.getElementById(
+        "quantity"
+    ).textContent =
+        quantity;
+
+
+    updateQuantityButtons();
+
+}
+
+
+function decreaseQuantity() {
+
+    if (quantity > 1) {
+
+        quantity--;
+
+    }
+
+
+    document.getElementById(
+        "quantity"
+    ).textContent =
+        quantity;
+
+
+    updateQuantityButtons();
+
+}
+
+
+function updateQuantityButtons() {
+
+    if (!selectedVariant) return;
+
+
+    const stock =
+        Number(
+            selectedVariant.Stock || 0
+        );
+
+
+    document.getElementById(
+        "minusButton"
+    ).disabled =
+        quantity <= 1;
+
+
+    document.getElementById(
+        "plusButton"
+    ).disabled =
+        quantity >= stock;
+
+}
+
+
+/* =====================================
+   ADD TO CART
+===================================== */
+
+function handleAddToCart() {
+
+    if (!selectedVariant) {
+
+        alert(
+            "Please select a size."
+        );
+
+        return;
+
+    }
+
+
+    const stock =
+        Number(
+            selectedVariant.Stock || 0
+        );
+
+
+    if (stock <= 0) {
+
+        alert(
+            "This size is out of stock."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Cart identity is ProductID +
+     * VariantID.
+     */
+
+    const existing =
+        cart.find(
+            item =>
+                String(
+                    item.ProductID
+                )
+                ===
+                String(
+                    currentProduct.ProductID
+                )
+                &&
+                String(
+                    item.VariantID
+                )
+                ===
+                String(
+                    selectedVariant.VariantID
+                )
+        );
+
+
+    if (existing) {
+
+        const newQuantity =
+            existing.quantity +
+            quantity;
+
+
+        if (
+            newQuantity >
+            stock
+        ) {
+
+            alert(
+                "Only " +
+                stock +
+                " available."
+            );
+
+            return;
+
+        }
+
+
+        existing.quantity =
+            newQuantity;
+
+    } else {
+
+        cart.push({
+
+            ProductID:
+                currentProduct.ProductID,
+
+            VariantID:
+                selectedVariant.VariantID,
+
+            SKU:
+                selectedVariant.SKU,
+
+            ProductName:
+                currentProduct.ProductName,
+
+            Color:
+                currentProduct.Color ||
+                selectedVariant.ColorCode ||
+                "",
+
+            ColorCode:
+                selectedVariant.ColorCode ||
+                "",
+
+            Size:
+                selectedVariant.Size,
+
+            Price:
+                Number(
+                    selectedVariant.Price
+                ) || 0,
+
+            ComparePrice:
+                Number(
+                    selectedVariant.ComparePrice
+                ) || 0,
+
+            Stock:
+                stock,
+
+            Image:
+                currentProduct.MainImage ||
+                selectedVariant.Image ||
+                "",
+
+            quantity:
+                quantity
+
+        });
+
+    }
+
+
+    localStorage.setItem(
+        "urbnvybe_cart",
+        JSON.stringify(cart)
+    );
+
+
+    updateCartCount();
+
+
+    alert(
+        currentProduct.ProductName +
+        " (" +
+        selectedVariant.Size +
+        ") added to cart!"
+    );
+
+}
+
+
+/* =====================================
+   BUY NOW
+===================================== */
+
+function handleBuyNow() {
+
+    if (!selectedVariant) {
+
+        alert(
+            "Please select a size."
+        );
+
+        return;
+
+    }
+
+
+    handleAddToCart();
+
+
+    /*
+     * Checkout page will be
+     * connected later.
+     */
+
+}
+
+
+/* =====================================
+   SHOW CART
+===================================== */
+
+function showCart() {
+
+    if (cart.length === 0) {
+
+        alert(
+            "Your cart is empty."
+        );
+
+        return;
+
+    }
+
+
+    let message =
+        "YOUR CART\n\n";
+
+
+    let total = 0;
+
+
+    cart.forEach(
+        item => {
+
+            const itemTotal =
+                Number(item.Price) *
+                Number(item.quantity);
+
+
+            total +=
+                itemTotal;
+
+
+            message +=
+
+                item.ProductName +
+
+                "\nSize: " +
+                item.Size +
+
+                "\nSKU: " +
+                item.SKU +
+
+                "\nQty: " +
+                item.quantity +
+
+                " = ₹" +
+
+                itemTotal +
+
+                "\n\n";
+
+        }
+    );
+
+
+    message +=
+        "TOTAL: ₹" +
+        total;
+
+
+    alert(
+        message
+    );
+
+}
+
+
+/* =====================================
    IMAGE CHANGE
-========================= */
+===================================== */
 
 function changeImage(
     image,
@@ -1157,7 +1836,8 @@ function changeImage(
 
     if (main) {
 
-        main.src = image;
+        main.src =
+            image;
 
     }
 
@@ -1179,134 +1859,97 @@ function changeImage(
 }
 
 
-/* =========================
-   ADD TO CART
-========================= */
+/* =====================================
+   FORMAT MONEY
+===================================== */
 
-function handleAddToCart() {
+function formatMoney(value) {
 
-    if (!selectedSize) {
-
-        alert(
-            "Please select a size."
-        );
-
-        return;
-
-    }
+    const number =
+        Number(value || 0);
 
 
-    addToCart();
-
-}
-
-
-/* =========================
-   BUY NOW
-========================= */
-
-function handleBuyNow() {
-
-    if (!selectedSize) {
-
-        alert(
-            "Please select a size."
-        );
-
-        return;
-
-    }
-
-
-    addToCart();
-
-
-    /*
-     * Checkout page will be
-     * connected later.
-     */
-
-    alert(
-        "Added to cart. Checkout will be available next."
+    return number.toLocaleString(
+        "en-IN"
     );
 
 }
 
 
-/* =========================
-   SHOW CART
-========================= */
-
-function showCart() {
-
-    if (cart.length === 0) {
-
-        alert(
-            "Your cart is empty."
-        );
-
-        return;
-
-    }
-
-
-    let message =
-        "YOUR CART\n\n";
-
-    let total = 0;
-
-
-    cart.forEach(
-        item => {
-
-            const itemTotal =
-                item.Price *
-                item.quantity;
-
-            total += itemTotal;
-
-
-            message +=
-                item.ProductName +
-                " x " +
-                item.quantity +
-                " = ₹" +
-                itemTotal +
-                "\n";
-
-        }
-    );
-
-
-    message +=
-        "\nTOTAL: ₹" +
-        total;
-
-
-    alert(message);
-
-}
-
-
-/* =========================
-   SECURITY
-========================= */
+/* =====================================
+   HTML ESCAPE
+===================================== */
 
 function escapeHTML(value) {
 
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        value || ""
+    )
+
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+
+    .replace(
+        /</g,
+        "&lt;"
+    )
+
+    .replace(
+        />/g,
+        "&gt;"
+    )
+
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+
+    .replace(
+        /'/g,
+        "&#039;"
+    );
 
 }
 
 
-/* =========================
+/* =====================================
+   JAVASCRIPT STRING ESCAPE
+===================================== */
+
+function escapeJS(value) {
+
+    return String(
+        value || ""
+    )
+
+    .replace(
+        /\\/g,
+        "\\\\"
+    )
+
+    .replace(
+        /'/g,
+        "\\'"
+    )
+
+    .replace(
+        /"/g,
+        '\\"'
+    )
+
+    .replace(
+        /\r?\n/g,
+        "\\n"
+    );
+
+}
+
+
+/* =====================================
    START
-========================= */
+===================================== */
 
 updateCartCount();
 
