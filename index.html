@@ -959,21 +959,13 @@ async function loadProducts() {
 
 function viewProduct(product) {
 
-    alert(
-
-        product.ProductName +
-        "\n\n" +
-
-        "Price: ₹" +
-        product.Price +
-        "\n\n" +
-
-        "Product page will be added next."
-
-    );
+    window.location.href =
+        "product.html?id=" +
+        encodeURIComponent(
+            product.ProductID
+        );
 
 }
-
 
 /* =========================
    SECURITY HELPER
