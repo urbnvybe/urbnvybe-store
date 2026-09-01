@@ -3,1050 +3,230 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Checkout | URBNVYBE</title>
-
 <style>
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #f7f7f7;
-    color: #111;
-}
-
-header {
-    background: #111;
-    color: #fff;
-    height: 70px;
-    display: flex;
-    align-items: center;
-}
-
-.header-inner {
-    width: 90%;
-    max-width: 1200px;
-    margin: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 2px;
-}
-
-.back-cart {
-    color: #fff;
-    text-decoration: none;
-    font-size: 13px;
-}
-
-main {
-    width: 90%;
-    max-width: 1200px;
-    margin: 35px auto 80px;
-}
-
-h1 {
-    margin-bottom: 25px;
-}
-
-.checkout-grid {
-    display: grid;
-    grid-template-columns: 1fr 330px;
-    gap: 25px;
-}
-
-.box {
-    background: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.06);
-}
-
-.box h2 {
-    margin-top: 0;
-    font-size: 18px;
-}
-
-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 7px;
-}
-
-input,
-textarea,
-select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-bottom: 15px;
-    font-family: inherit;
-}
-
-textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-.grid2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.place-order {
-    width: 100%;
-    padding: 15px;
-    border: none;
-    background: #111;
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 3px;
-    font-size: 14px;
-}
-
-.place-order:disabled {
-    background: #777;
-    cursor: not-allowed;
-}
-
-.small {
-    font-size: 12px;
-    color: #666;
-}
-
-.error {
-    display: none;
-    background: #ffe5e5;
-    color: #b00000;
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    font-size: 13px;
-}
-
-.item {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.item:last-child {
-    border-bottom: none;
-}
-
-.item img {
-    width: 55px;
-    height: 65px;
-    object-fit: contain;
-    background: #f4f4f4;
-    border-radius: 4px;
-}
-
-.item-info {
-    flex: 1;
-    font-size: 12px;
-}
-
-.item-name {
-    font-weight: 700;
-    font-size: 13px;
-    margin-bottom: 5px;
-}
-
-.item-price {
-    font-weight: 700;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    margin: 12px 0;
-    font-size: 13px;
-}
-
-.summary-total {
-    border-top: 1px solid #ddd;
-    padding-top: 15px;
-    margin-top: 15px;
-    font-size: 17px;
-    font-weight: 800;
-}
-
-@media (max-width: 800px) {
-
-    .checkout-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .grid2 {
-        grid-template-columns: 1fr;
-    }
-
-    main {
-        width: 94%;
-    }
-
-}
-
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f7f7f7;color:#111}
+header{background:#111;color:#fff;height:70px;display:flex;align-items:center}
+.header-inner{width:90%;max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:22px;font-weight:800;letter-spacing:2px}
+.back-cart{color:#fff;text-decoration:none;font-size:13px}
+main{width:90%;max-width:1200px;margin:35px auto 80px}
+h1{margin-bottom:25px}
+.checkout-grid{display:grid;grid-template-columns:1fr 330px;gap:25px}
+.box{background:#fff;padding:25px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.box h2{margin-top:0;font-size:18px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
+input,textarea,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:4px;font-size:14px;margin-bottom:15px;font-family:inherit}
+textarea{min-height:100px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.place-order{width:100%;padding:15px;border:none;background:#111;color:#fff;font-weight:700;cursor:pointer;border-radius:3px;font-size:14px}
+.place-order:disabled{background:#777;cursor:not-allowed}
+.small{font-size:12px;color:#666}
+.error{display:none;background:#ffe5e5;color:#b00000;padding:12px;border-radius:4px;margin-bottom:15px;font-size:13px}
+.item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #eee}
+.item:last-child{border-bottom:none}
+.item img{width:55px;height:65px;object-fit:contain;background:#f4f4f4;border-radius:4px}
+.item-info{flex:1;font-size:12px}
+.item-name{font-weight:700;font-size:13px;margin-bottom:5px}
+.item-price{font-weight:700}
+.summary-row{display:flex;justify-content:space-between;margin:12px 0;font-size:13px}
+.summary-total{border-top:1px solid #ddd;padding-top:15px;margin-top:15px;font-size:17px;font-weight:800}
+@media(max-width:800px){.checkout-grid{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}main{width:94%}}
 </style>
 </head>
-
 <body>
-
 <header>
-
-    <div class="header-inner">
-
-        <div class="logo">
-            URBNVYBE
-        </div>
-
-        <a href="cart.html" class="back-cart">
-            ← CART
-        </a>
-
-    </div>
-
+  <div class="header-inner">
+    <div class="logo">URBNVYBE</div>
+    <a href="cart.html" class="back-cart">← CART</a>
+  </div>
 </header>
 
-
 <main>
+  <h1>Checkout</h1>
+  <div class="checkout-grid">
+    <div class="box">
+      <h2>Delivery Details</h2>
+      <div id="errorBox" class="error"></div>
+      <form id="checkoutForm">
+        <label for="name">Full Name *</label>
+        <input id="name" type="text" required autocomplete="name">
 
-    <h1>Checkout</h1>
-
-
-    <div class="checkout-grid">
-
-
-        <!-- =========================
-             DELIVERY DETAILS
-        ========================== -->
-
-        <div class="box">
-
-            <h2>Delivery Details</h2>
-
-            <div id="errorBox" class="error"></div>
-
-
-            <form id="checkoutForm">
-
-
-                <label for="name">
-                    Full Name *
-                </label>
-
-                <input
-                    id="name"
-                    type="text"
-                    required
-                    autocomplete="name"
-                >
-
-
-                <div class="grid2">
-
-                    <div>
-
-                        <label for="phone">
-                            Mobile Number *
-                        </label>
-
-                        <input
-                            id="phone"
-                            type="tel"
-                            required
-                            pattern="[0-9]{10}"
-                            maxlength="10"
-                            autocomplete="tel"
-                        >
-
-                    </div>
-
-
-                    <div>
-
-                        <label for="email">
-                            Email
-                        </label>
-
-                        <input
-                            id="email"
-                            type="email"
-                            autocomplete="email"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <label for="address">
-                    Full Address *
-                </label>
-
-                <textarea
-                    id="address"
-                    required
-                    autocomplete="street-address"
-                ></textarea>
-
-
-                <div class="grid2">
-
-                    <div>
-
-                        <label for="city">
-                            City *
-                        </label>
-
-                        <input
-                            id="city"
-                            type="text"
-                            required
-                            autocomplete="address-level2"
-                        >
-
-                    </div>
-
-
-                    <div>
-
-                        <label for="pincode">
-                            PIN Code *
-                        </label>
-
-                        <input
-                            id="pincode"
-                            type="text"
-                            required
-                            pattern="[0-9]{6}"
-                            maxlength="6"
-                            autocomplete="postal-code"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <div class="grid2">
-
-                    <div>
-
-                        <label for="state">
-                            State *
-                        </label>
-
-                        <input
-                            id="state"
-                            type="text"
-                            value="Gujarat"
-                            required
-                            autocomplete="address-level1"
-                        >
-
-                    </div>
-
-
-                    <div>
-
-                        <label for="payment">
-                            Payment Method
-                        </label>
-
-                        <select id="payment">
-
-                            <option value="Cash on Delivery">
-                                Cash on Delivery
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                <label for="note">
-                    Order Note
-                </label>
-
-                <textarea
-                    id="note"
-                    placeholder="Optional"
-                ></textarea>
-
-
-                <button
-                    class="place-order"
-                    id="placeOrder"
-                    type="submit"
-                >
-                    PLACE ORDER
-                </button>
-
-
-                <p class="small" style="margin-top:12px;">
-                    Your order will be recorded in the URBNVYBE Google Sheet.
-                </p>
-
-            </form>
-
+        <div class="grid2">
+          <div>
+            <label for="phone">Mobile Number *</label>
+            <input id="phone" type="tel" required pattern="[0-9]{10}" maxlength="10" autocomplete="tel">
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" type="email" autocomplete="email">
+          </div>
         </div>
 
+        <label for="address">Full Address *</label>
+        <textarea id="address" required autocomplete="street-address"></textarea>
 
-
-        <!-- =========================
-             ORDER SUMMARY
-        ========================== -->
-
-        <div class="box">
-
-            <h2>Order Summary</h2>
-
-            <div id="summary"></div>
-
+        <div class="grid2">
+          <div>
+            <label for="city">City *</label>
+            <input id="city" type="text" required>
+          </div>
+          <div>
+            <label for="pincode">PIN Code *</label>
+            <input id="pincode" type="text" required pattern="[0-9]{6}" maxlength="6">
+          </div>
         </div>
 
+        <div class="grid2">
+          <div>
+            <label for="state">State *</label>
+            <input id="state" type="text" value="Gujarat" required>
+          </div>
+          <div>
+            <label for="payment">Payment Method</label>
+            <select id="payment">
+              <option value="Cash on Delivery">Cash on Delivery</option>
+            </select>
+          </div>
+        </div>
 
+        <label for="note">Order Note</label>
+        <textarea id="note" placeholder="Optional"></textarea>
+
+        <button class="place-order" id="placeOrder" type="submit">PLACE ORDER</button>
+        <p class="small" style="margin-top:12px">Your order will be recorded in the URBNVYBE Google Sheet.</p>
+      </form>
     </div>
 
+    <div class="box">
+      <h2>Order Summary</h2>
+      <div id="summary"></div>
+    </div>
+  </div>
 </main>
 
-
 <script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyo1cxZFeA3uN13nY02kPUITiatINQOJ8KbzGecmVWxXKbhG3cSVfE9OZNTE_C_SyITuQ/exec";
+let cart = JSON.parse(localStorage.getItem("urbnvybe_cart") || "[]");
 
+const summary = document.getElementById("summary");
+const form = document.getElementById("checkoutForm");
+const button = document.getElementById("placeOrder");
+const errorBox = document.getElementById("errorBox");
 
-/* =========================================================
-   URBNVYBE API
-========================================================= */
-
-const API_URL =
-"https://script.google.com/macros/s/AKfycbzzW9XtaXrbm2YS1CFpoBu4tz2h2huBGNwmybtB360FC3HQ02A7EoXhHZFmF-502ohFQ/exec";
-
-
-/* =========================================================
-   GET CART
-========================================================= */
-
-let cart = [];
-
-try {
-
-    cart = JSON.parse(
-        localStorage.getItem("urbnvybe_cart") || "[]"
-    );
-
-} catch (error) {
-
-    cart = [];
-
+function money(v) {
+  return Number(v || 0).toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 }
 
-
-/* =========================================================
-   ELEMENTS
-========================================================= */
-
-const summary =
-    document.getElementById("summary");
-
-const form =
-    document.getElementById("checkoutForm");
-
-const button =
-    document.getElementById("placeOrder");
-
-const errorBox =
-    document.getElementById("errorBox");
-
-
-/* =========================================================
-   MONEY
-========================================================= */
-
-function money(value) {
-
-    return Number(value || 0)
-        .toLocaleString("en-IN", {
-            style: "currency",
-            currency: "INR",
-            maximumFractionDigits: 0
-        });
-
+function escapeHTML(v) {
+  return String(v || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 }
 
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHTML(value) {
-
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.style.display = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
-
-/* =========================================================
-   SHOW ERROR
-========================================================= */
-
-function showError(message) {
-
-    errorBox.textContent = message;
-
-    errorBox.style.display = "block";
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-
-}
-
-
-/* =========================================================
-   RENDER SUMMARY
-========================================================= */
 
 function renderSummary() {
+  if (!cart.length) {
+    summary.innerHTML = "<p>Your cart is empty.</p>";
+    button.disabled = true;
+    return;
+  }
 
-    if (!cart.length) {
+  let subtotal = 0;
+  let html = "";
 
-        summary.innerHTML =
-            "<p>Your cart is empty.</p>";
-
-        button.disabled = true;
-
-        return;
-
-    }
-
-
-    let subtotal = 0;
-
-
-    let html = "";
-
-
-    cart.forEach(function(item) {
-
-
-        const price =
-            Number(
-                item.Price ||
-                item.price ||
-                0
-            );
-
-
-        const quantity =
-            Number(
-                item.quantity ||
-                item.qty ||
-                1
-            );
-
-
-        const lineTotal =
-            price * quantity;
-
-
-        subtotal += lineTotal;
-
-
-        const image =
-            item.Image ||
-            item.image ||
-            "";
-
-
-        const productName =
-            item.ProductName ||
-            item.productName ||
-            item.name ||
-            "Product";
-
-
-        const size =
-            item.Size ||
-            item.size ||
-            "";
-
-
-        const sku =
-            item.SKU ||
-            item.sku ||
-            "";
-
-
-        const color =
-            item.ColorCode ||
-            item.colorCode ||
-            "";
-
-
-        html += `
-
-            <div class="item">
-
-                ${
-                    image
-                    ?
-                    `<img
-                        src="${escapeHTML(image)}"
-                        alt="${escapeHTML(productName)}"
-                    >`
-                    :
-                    ""
-                }
-
-                <div class="item-info">
-
-                    <div class="item-name">
-                        ${escapeHTML(productName)}
-                    </div>
-
-                    ${
-                        color
-                        ?
-                        `Colour: ${escapeHTML(color)}<br>`
-                        :
-                        ""
-                    }
-
-                    ${
-                        size
-                        ?
-                        `Size: ${escapeHTML(size)}<br>`
-                        :
-                        ""
-                    }
-
-                    ${
-                        sku
-                        ?
-                        `SKU: ${escapeHTML(sku)}<br>`
-                        :
-                        ""
-                    }
-
-                    Qty: ${quantity}
-
-                    <div class="item-price">
-                        ${money(lineTotal)}
-                    </div>
-
-                </div>
-
-            </div>
-
-        `;
-
-    });
-
-
-    const shipping = 0;
-
-    const total =
-        subtotal + shipping;
-
+  cart.forEach(item => {
+    const price = Number(item.Price || 0);
+    const qty = Number(item.quantity || 1);
+    const line = price * qty;
+    subtotal += line;
 
     html += `
-
-        <div class="summary-row">
-
-            <span>Subtotal</span>
-
-            <strong>
-                ${money(subtotal)}
-            </strong>
-
+      <div class="item">
+        ${item.Image ? `<img src="${escapeHTML(item.Image)}" alt="">` : ""}
+        <div class="item-info">
+          <div class="item-name">${escapeHTML(item.ProductName)}</div>
+          ${item.ColorCode ? `Colour: ${escapeHTML(item.ColorCode)}<br>` : ""}
+          ${item.Size ? `Size: ${escapeHTML(item.Size)}<br>` : ""}
+          Qty: ${qty}
+          <div class="item-price">${money(line)}</div>
         </div>
+      </div>`;
+  });
 
+  html += `
+    <div class="summary-row"><span>Subtotal</span><strong>${money(subtotal)}</strong></div>
+    <div class="summary-row"><span>Shipping</span><strong>FREE</strong></div>
+    <div class="summary-row summary-total"><span>Total</span><strong>${money(subtotal)}</strong></div>`;
 
-        <div class="summary-row">
-
-            <span>Shipping</span>
-
-            <strong>
-                FREE
-            </strong>
-
-        </div>
-
-
-        <div class="summary-row summary-total">
-
-            <span>Total</span>
-
-            <strong>
-                ${money(total)}
-            </strong>
-
-        </div>
-
-    `;
-
-
-    summary.innerHTML = html;
-
+  summary.innerHTML = html;
 }
 
+form.addEventListener("submit", async function(e) {
+  e.preventDefault();
+  errorBox.style.display = "none";
+
+  if (!cart.length) {
+    showError("Your cart is empty.");
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "PLACING ORDER...";
+
+  const payload = {
+    customerName: document.getElementById("name").value.trim(),
+    mobile: document.getElementById("phone").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    address: document.getElementById("address").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    pinCode: document.getElementById("pincode").value.trim(),
+    state: document.getElementById("state").value.trim(),
+    paymentMethod: document.getElementById("payment").value,
+    orderNote: document.getElementById("note").value.trim(),
+    items: cart.map(item => ({
+      productId: item.ProductID || "",
+      variantId: item.VariantID || "",
+      productName: item.ProductName || "Product",
+      sku: item.SKU || "",
+      color: item.ColorCode || "",
+      size: item.Size || "",
+      price: Number(item.Price || 0),
+      quantity: Number(item.quantity || 1)
+    }))
+  };
+
+  if (!payload.customerName || !/^[0-9]{10}$/.test(payload.mobile) || !/^[0-9]{6}$/.test(payload.pinCode)) {
+    showError("Please fill all required fields correctly.");
+    button.disabled = false;
+    button.textContent = "PLACE ORDER";
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "Unable to place order");
+
+    localStorage.removeItem("urbnvybe_cart");
+    window.location.href = "order-success.html?orderId=" + encodeURIComponent(data.orderId || "");
+  } catch (err) {
+    showError(err.message || "Unable to place order. Please try again.");
+    button.disabled = false;
+    button.textContent = "PLACE ORDER";
+  }
+});
 
 renderSummary();
-
-
-/* =========================================================
-   PLACE ORDER
-========================================================= */
-
-form.addEventListener(
-    "submit",
-    async function(event) {
-
-        event.preventDefault();
-
-
-        errorBox.style.display = "none";
-
-
-        if (!cart.length) {
-
-            showError(
-                "Your cart is empty."
-            );
-
-            return;
-
-        }
-
-
-        button.disabled = true;
-
-        button.textContent =
-            "PLACING ORDER...";
-
-
-        /* ---------------------------------------------
-           CUSTOMER
-        --------------------------------------------- */
-
-        const customer = {
-
-            name:
-                document
-                    .getElementById("name")
-                    .value
-                    .trim(),
-
-            phone:
-                document
-                    .getElementById("phone")
-                    .value
-                    .trim(),
-
-            email:
-                document
-                    .getElementById("email")
-                    .value
-                    .trim(),
-
-            address:
-                document
-                    .getElementById("address")
-                    .value
-                    .trim(),
-
-            city:
-                document
-                    .getElementById("city")
-                    .value
-                    .trim(),
-
-            pincode:
-                document
-                    .getElementById("pincode")
-                    .value
-                    .trim(),
-
-            state:
-                document
-                    .getElementById("state")
-                    .value
-                    .trim(),
-
-            paymentMethod:
-                document
-                    .getElementById("payment")
-                    .value,
-
-            orderNote:
-                document
-                    .getElementById("note")
-                    .value
-                    .trim()
-
-        };
-
-
-        /* ---------------------------------------------
-           VALIDATE CUSTOMER
-        --------------------------------------------- */
-
-        if (!customer.name) {
-
-            showError(
-                "Please enter your full name."
-            );
-
-            button.disabled = false;
-
-            button.textContent =
-                "PLACE ORDER";
-
-            return;
-
-        }
-
-
-        if (!/^[0-9]{10}$/.test(customer.phone)) {
-
-            showError(
-                "Please enter a valid 10-digit mobile number."
-            );
-
-            button.disabled = false;
-
-            button.textContent =
-                "PLACE ORDER";
-
-            return;
-
-        }
-
-
-        if (!/^[0-9]{6}$/.test(customer.pincode)) {
-
-            showError(
-                "Please enter a valid 6-digit PIN code."
-            );
-
-            button.disabled = false;
-
-            button.textContent =
-                "PLACE ORDER";
-
-            return;
-
-        }
-
-
-        /* ---------------------------------------------
-           SEND ORDER
-        --------------------------------------------- */
-
-        const payload = {
-
-            customerName:
-                customer.name,
-
-            mobile:
-                customer.phone,
-
-            email:
-                customer.email,
-
-            address:
-                customer.address,
-
-            city:
-                customer.city,
-
-            pinCode:
-                customer.pincode,
-
-            state:
-                customer.state,
-
-            paymentMethod:
-                customer.paymentMethod,
-
-            orderNote:
-                customer.orderNote,
-
-            items:
-                cart.map(function(item) {
-
-                    return {
-
-                        productId:
-                            item.ProductID ||
-                            item.productId ||
-                            item.id ||
-                            "",
-
-                        productName:
-                            item.ProductName ||
-                            item.productName ||
-                            item.name ||
-                            "Product",
-
-                        sku:
-                            item.SKU ||
-                            item.sku ||
-                            "",
-
-                        color:
-                            item.ColorCode ||
-                            item.colorCode ||
-                            "",
-
-                        size:
-                            item.Size ||
-                            item.size ||
-                            "",
-
-                        price:
-                            Number(
-                                item.Price ||
-                                item.price ||
-                                0
-                            ),
-
-                        quantity:
-                            Number(
-                                item.quantity ||
-                                item.qty ||
-                                1
-                            )
-
-                    };
-
-                })
-
-        };
-
-
-        try {
-
-
-            /* -----------------------------------------
-               IMPORTANT:
-               Send RAW JSON.
-
-               Content-Type is text/plain so that
-               the browser can make a simple cross-origin
-               request to Google Apps Script.
-            ----------------------------------------- */
-
-            const response =
-                await fetch(
-                    API_URL + "?action=order",
-                    {
-
-                        method: "POST",
-
-                        headers: {
-
-                            "Content-Type":
-                                "text/plain;charset=utf-8"
-
-                        },
-
-                        body:
-                            JSON.stringify(payload)
-
-                    }
-                );
-
-
-            const data =
-                await response.json();
-
-
-            console.log(
-                "ORDER RESPONSE:",
-                data
-            );
-
-
-            if (!data.success) {
-
-                throw new Error(
-                    data.error ||
-                    "Unable to place order."
-                );
-
-            }
-
-
-            /* -----------------------------------------
-               ORDER SUCCESS
-            ----------------------------------------- */
-
-            localStorage.removeItem(
-                "urbnvybe_cart"
-            );
-
-
-            const orderId =
-                data.orderId || "";
-
-
-            window.location.href =
-                "order-success.html?orderId=" +
-                encodeURIComponent(orderId);
-
-
-        } catch (error) {
-
-
-            console.error(
-                "ORDER ERROR:",
-                error
-            );
-
-
-            showError(
-                error.message ||
-                "Unable to place order. Please try again."
-            );
-
-
-            button.disabled = false;
-
-            button.textContent =
-                "PLACE ORDER";
-
-        }
-
-    }
-);
-
 </script>
-
 </body>
 </html>
