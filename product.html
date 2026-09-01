@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Product | URBNVYBE</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f7f7f7;
+            color: #111;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        header {
+            background: #111;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: auto;
+            height: 70px;
+            padding: 0 20px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            color: white;
+            text-decoration: none;
+
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: 3px;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-right a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .cart {
+            cursor: pointer;
+        }
+
+        /* =========================
+           PRODUCT
+        ========================= */
+
+        .product-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        /* =========================
+           GALLERY
+        ========================= */
+
+        .gallery {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+
+            box-shadow:
+                0 5px 20px rgba(0,0,0,.06);
+        }
+
+        .main-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #f3f3f3;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .main-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .thumbnail-container {
+            display: flex;
+            gap: 10px;
+
+            margin-top: 15px;
+
+            overflow-x: auto;
+        }
+
+        .thumbnail {
+            width: 75px;
+            height: 75px;
+
+            flex-shrink: 0;
+
+            border: 2px solid transparent;
+            border-radius: 5px;
+
+            overflow: hidden;
+            cursor: pointer;
+
+            background: #eee;
+        }
+
+        .thumbnail.active {
+            border-color: #111;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* =========================
+           PRODUCT INFO
+        ========================= */
+
+        .product-info {
+            padding-top: 10px;
+        }
+
+        .category {
+            color: #777;
+
+            font-size: 13px;
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            margin-bottom: 12px;
+        }
+
+        .product-title {
+            font-size: 38px;
+            line-height: 1.1;
+
+            margin-bottom: 15px;
+        }
+
+        .description {
+            color: #555;
+
+            line-height: 1.7;
+
+            margin: 20px 0;
+        }
+
+        /* =========================
+           PRICE
+        ========================= */
+
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            margin: 20px 0;
+        }
+
+        .price {
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .compare-price {
+            color: #999;
+            text-decoration: line-through;
+            font-size: 18px;
+        }
+
+        /* =========================
+           OPTIONS
+        ========================= */
+
+        .option {
+            margin: 25px 0;
+        }
+
+        .option-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .size-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .size-button {
+            min-width: 50px;
+
+            padding: 11px 15px;
+
+            background: white;
+            border: 1px solid #ccc;
+
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .size-button:hover,
+        .size-button.selected {
+            background: #111;
+            color: white;
+            border-color: #111;
+        }
+
+        .color-value {
+            font-weight: 600;
+        }
+
+        /* =========================
+           QUANTITY
+        ========================= */
+
+        .quantity-box {
+            display: flex;
+            align-items: center;
+
+            width: fit-content;
+
+            border: 1px solid #ccc;
+            background: white;
+
+            border-radius: 4px;
+
+            overflow: hidden;
+        }
+
+        .quantity-box button {
+            width: 42px;
+            height: 42px;
+
+            border: 0;
+            background: white;
+
+            font-size: 20px;
+
+            cursor: pointer;
+        }
+
+        .quantity-box span {
+            width: 45px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* =========================
+           ACTION BUTTONS
+        ========================= */
+
+        .actions {
+            display: flex;
+            gap: 10px;
+
+            margin-top: 25px;
+        }
+
+        .add-cart,
+        .buy-now {
+            flex: 1;
+
+            padding: 15px;
+
+            border-radius: 4px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .add-cart {
+            background: white;
+            color: #111;
+            border: 1px solid #111;
+        }
+
+        .buy-now {
+            background: #111;
+            color: white;
+            border: 1px solid #111;
+        }
+
+        /* =========================
+           BELOW PRODUCT
+        ========================= */
+
+        .details {
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+        }
+
+        .detail-box {
+            background: white;
+            padding: 30px;
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 5px 20px rgba(0,0,0,.05);
+        }
+
+        .detail-box h2 {
+            margin-bottom: 15px;
+        }
+
+        .detail-box p {
+            color: #555;
+            line-height: 1.7;
+        }
+
+        /* =========================
+           LOADING / ERROR
+        ========================= */
+
+        .message {
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 800px) {
+
+            .product-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .product-title {
+                font-size: 30px;
+            }
+
+            .product-info {
+                padding-top: 0;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- HEADER -->
+
+<header>
+
+    <div class="nav">
+
+        <a href="index.html" class="logo">
+            URBNVYBE
+        </a>
+
+        <div class="nav-right">
+
+            <a href="index.html">
+                SHOP
+            </a>
+
+            <div class="cart" onclick="showCart()">
+                🛒 Cart (<span id="cartCount">0</span>)
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<!-- PRODUCT AREA -->
+
+<div id="page">
+
+    <div class="message">
+        Loading product...
+    </div>
+
+</div>
+
+
+
+<script>
+
+
+/* =========================
+   API
+========================= */
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbzzW9XtaXrMbm2YS1CFpoBu4tz2h2huBGNwmybtB36OFC3HQ02A7EoXhHZFmf-5O2ohFQ/exec?action=products";
+
+
+/* =========================
+   PRODUCT ID
+========================= */
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const productId =
+    params.get("id");
+
+
+/* =========================
+   CART
+========================= */
+
+let cart =
+    JSON.parse(
+        localStorage.getItem("urbnvybe_cart")
+    ) || [];
+
+
+function updateCartCount() {
+
+    const count =
+        cart.reduce(
+            (total, item) =>
+                total + item.quantity,
+            0
+        );
+
+    document.getElementById(
+        "cartCount"
+    ).textContent = count;
+}
+
+
+function addToCart() {
+
+    if (!currentProduct) return;
+
+
+    const existing =
+        cart.find(
+            item =>
+                item.ProductID ===
+                currentProduct.ProductID
+        );
+
+
+    if (existing) {
+
+        existing.quantity += quantity;
+
+    } else {
+
+        cart.push({
+
+            ProductID:
+                currentProduct.ProductID,
+
+            ProductName:
+                currentProduct.ProductName,
+
+            Price:
+                Number(currentProduct.Price) || 0,
+
+            MainImage:
+                currentProduct.MainImage || "",
+
+            Size:
+                selectedSize,
+
+            Color:
+                currentProduct.Color || "",
+
+            quantity:
+                quantity
+
+        });
+
+    }
+
+
+    localStorage.setItem(
+        "urbnvybe_cart",
+        JSON.stringify(cart)
+    );
+
+
+    updateCartCount();
+
+
+    alert(
+        currentProduct.ProductName +
+        " added to cart!"
+    );
+
+}
+
+
+/* =========================
+   QUANTITY
+========================= */
+
+let quantity = 1;
+
+
+function increaseQuantity() {
+
+    quantity++;
+
+    document.getElementById(
+        "quantity"
+    ).textContent = quantity;
+
+}
+
+
+function decreaseQuantity() {
+
+    if (quantity > 1) {
+        quantity--;
+    }
+
+    document.getElementById(
+        "quantity"
+    ).textContent = quantity;
+
+}
+
+
+/* =========================
+   SIZE
+========================= */
+
+let selectedSize = "";
+
+
+function selectSize(size) {
+
+    selectedSize = size;
+
+    document.querySelectorAll(
+        ".size-button"
+    ).forEach(button => {
+
+        button.classList.remove(
+            "selected"
+        );
+
+        if (
+            button.dataset.size ===
+            size
+        ) {
+
+            button.classList.add(
+                "selected"
+            );
+
+        }
+
+    });
+
+}
+
+
+/* =========================
+   CURRENT PRODUCT
+========================= */
+
+let currentProduct = null;
+
+
+/* =========================
+   LOAD PRODUCT
+========================= */
+
+async function loadProduct() {
+
+    const page =
+        document.getElementById(
+            "page"
+        );
+
+
+    if (!productId) {
+
+        page.innerHTML = `
+
+            <div class="message">
+
+                <h2>
+                    Product not found
+                </h2>
+
+                <p style="margin-top:15px;">
+                    No product ID was provided.
+                </p>
+
+                <p style="margin-top:20px;">
+                    <a href="index.html">
+                        Back to Shop
+                    </a>
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(API_URL);
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            throw new Error(
+                data.error ||
+                "Unable to load products"
+            );
+
+        }
+
+
+        const product =
+            (data.products || [])
+            .find(
+                item =>
+                    String(
+                        item.ProductID
+                    ) ===
+                    String(productId)
+            );
+
+
+        if (!product) {
+
+            throw new Error(
+                "Product not found"
+            );
+
+        }
+
+
+        currentProduct =
+            product;
+
+
+        document.title =
+            product.ProductName +
+            " | URBNVYBE";
+
+
+        renderProduct(product);
+
+
+    } catch (error) {
+
+        page.innerHTML = `
+
+            <div class="message">
+
+                <h2>
+                    Unable to load product
+                </h2>
+
+                <p style="margin-top:15px;">
+                    ${escapeHTML(
+                        error.message
+                    )}
+                </p>
+
+                <p style="margin-top:20px;">
+                    <a href="index.html">
+                        Back to Shop
+                    </a>
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================
+   RENDER PRODUCT
+========================= */
+
+function renderProduct(product) {
+
+    const page =
+        document.getElementById(
+            "page"
+        );
+
+
+    const images = [
+
+        product.MainImage,
+        product.BackImage,
+        product.SideImage,
+        product.SleeveImage,
+        product.CollarImage,
+        product.ModelImage
+
+    ].filter(
+        image =>
+            image &&
+            String(image).trim() !== ""
+    );
+
+
+    if (images.length === 0) {
+
+        images.push("");
+
+    }
+
+
+    page.innerHTML = `
+
+        <div class="product-container">
+
+
+            <!-- GALLERY -->
+
+            <div class="gallery">
+
+
+                <div class="main-image">
+
+                    ${
+                        images[0]
+
+                        ?
+
+                        `
+
+                        <img
+                            id="mainProductImage"
+                            src="${escapeHTML(
+                                images[0]
+                            )}"
+                            alt="${escapeHTML(
+                                product.ProductName
+                            )}"
+                        >
+
+                        `
+
+                        :
+
+                        `
+
+                        <span>
+                            Product Image
+                        </span>
+
+                        `
+                    }
+
+                </div>
+
+
+                <div class="thumbnail-container">
+
+                    ${
+
+                        images.map(
+                            (image, index) =>
+
+                            image
+
+                            ?
+
+                            `
+
+                            <div
+                                class="thumbnail ${
+                                    index === 0
+                                    ? "active"
+                                    : ""
+                                }"
+                                onclick="changeImage(
+                                    '${escapeHTML(image)}',
+                                    this
+                                )"
+                            >
+
+                                <img
+                                    src="${escapeHTML(image)}"
+                                    alt="Product view"
+                                >
+
+                            </div>
+
+                            `
+
+                            :
+
+                            ""
+
+                        ).join("")
+
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- PRODUCT INFORMATION -->
+
+            <div class="product-info">
+
+
+                <div class="category">
+
+                    ${escapeHTML(
+                        product.Category || ""
+                    )}
+
+                </div>
+
+
+                <h1 class="product-title">
+
+                    ${escapeHTML(
+                        product.ProductName || ""
+                    )}
+
+                </h1>
+
+
+                <div class="price-row">
+
+                    <span class="price">
+
+                        ₹${Number(
+                            product.Price || 0
+                        ).toLocaleString("en-IN")}
+
+                    </span>
+
+
+                    ${
+                        product.ComparePrice
+
+                        ?
+
+                        `
+
+                        <span class="compare-price">
+
+                            ₹${Number(
+                                product.ComparePrice
+                            ).toLocaleString("en-IN")}
+
+                        </span>
+
+                        `
+
+                        :
+
+                        ""
+
+                    }
+
+                </div>
+
+
+                <div class="description">
+
+                    ${escapeHTML(
+                        product.Description || ""
+                    )}
+
+                </div>
+
+
+                <!-- COLOR -->
+
+                <div class="option">
+
+                    <div class="option-title">
+                        Colour
+                    </div>
+
+                    <div class="color-value">
+
+                        ${escapeHTML(
+                            product.Color ||
+                            "Navy Blue"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <!-- SIZE -->
+
+                <div class="option">
+
+                    <div class="option-title">
+                        Size
+                    </div>
+
+
+                    <div class="size-buttons">
+
+                        <button
+                            class="size-button"
+                            data-size="S"
+                            onclick="selectSize('S')"
+                        >
+                            S
+                        </button>
+
+                        <button
+                            class="size-button"
+                            data-size="M"
+                            onclick="selectSize('M')"
+                        >
+                            M
+                        </button>
+
+                        <button
+                            class="size-button"
+                            data-size="L"
+                            onclick="selectSize('L')"
+                        >
+                            L
+                        </button>
+
+                        <button
+                            class="size-button"
+                            data-size="XL"
+                            onclick="selectSize('XL')"
+                        >
+                            XL
+                        </button>
+
+                        <button
+                            class="size-button"
+                            data-size="XXL"
+                            onclick="selectSize('XXL')"
+                        >
+                            XXL
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- QUANTITY -->
+
+                <div class="option">
+
+                    <div class="option-title">
+                        Quantity
+                    </div>
+
+
+                    <div class="quantity-box">
+
+                        <button
+                            onclick="decreaseQuantity()"
+                        >
+                            −
+                        </button>
+
+                        <span id="quantity">
+                            1
+                        </span>
+
+                        <button
+                            onclick="increaseQuantity()"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACTIONS -->
+
+                <div class="actions">
+
+                    <button
+                        class="add-cart"
+                        onclick="handleAddToCart()"
+                    >
+                        ADD TO CART
+                    </button>
+
+
+                    <button
+                        class="buy-now"
+                        onclick="handleBuyNow()"
+                    >
+                        BUY NOW
+                    </button>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- DETAILS -->
+
+        <div class="details">
+
+            <div class="detail-box">
+
+                <h2>
+                    Product Details
+                </h2>
+
+                <p>
+
+                    ${
+                        escapeHTML(
+                            product.Description ||
+                            "Premium quality product designed for everyday comfort and style."
+                        )
+                    }
+
+                </p>
+
+                <br>
+
+                ${
+                    product.Material
+
+                    ?
+
+                    `<p>
+                        <strong>Material:</strong>
+                        ${escapeHTML(
+                            product.Material
+                        )}
+                    </p>`
+
+                    :
+
+                    ""
+
+                }
+
+                ${
+                    product.Gender
+
+                    ?
+
+                    `<p>
+                        <strong>Gender:</strong>
+                        ${escapeHTML(
+                            product.Gender
+                        )}
+                    </p>`
+
+                    :
+
+                    ""
+
+                }
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================
+   IMAGE CHANGE
+========================= */
+
+function changeImage(
+    image,
+    thumbnail
+) {
+
+    const main =
+        document.getElementById(
+            "mainProductImage"
+        );
+
+
+    if (main) {
+
+        main.src = image;
+
+    }
+
+
+    document.querySelectorAll(
+        ".thumbnail"
+    ).forEach(
+        item =>
+            item.classList.remove(
+                "active"
+            )
+    );
+
+
+    thumbnail.classList.add(
+        "active"
+    );
+
+}
+
+
+/* =========================
+   ADD TO CART
+========================= */
+
+function handleAddToCart() {
+
+    if (!selectedSize) {
+
+        alert(
+            "Please select a size."
+        );
+
+        return;
+
+    }
+
+
+    addToCart();
+
+}
+
+
+/* =========================
+   BUY NOW
+========================= */
+
+function handleBuyNow() {
+
+    if (!selectedSize) {
+
+        alert(
+            "Please select a size."
+        );
+
+        return;
+
+    }
+
+
+    addToCart();
+
+
+    /*
+     * Checkout page will be
+     * connected later.
+     */
+
+    alert(
+        "Added to cart. Checkout will be available next."
+    );
+
+}
+
+
+/* =========================
+   SHOW CART
+========================= */
+
+function showCart() {
+
+    if (cart.length === 0) {
+
+        alert(
+            "Your cart is empty."
+        );
+
+        return;
+
+    }
+
+
+    let message =
+        "YOUR CART\n\n";
+
+    let total = 0;
+
+
+    cart.forEach(
+        item => {
+
+            const itemTotal =
+                item.Price *
+                item.quantity;
+
+            total += itemTotal;
+
+
+            message +=
+                item.ProductName +
+                " x " +
+                item.quantity +
+                " = ₹" +
+                itemTotal +
+                "\n";
+
+        }
+    );
+
+
+    message +=
+        "\nTOTAL: ₹" +
+        total;
+
+
+    alert(message);
+
+}
+
+
+/* =========================
+   SECURITY
+========================= */
+
+function escapeHTML(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+updateCartCount();
+
+loadProduct();
+
+
+</script>
+
+</body>
+
+</html>
