@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Checkout | URBNVYBE</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f7f7f7;color:#111}
+header{background:#111;color:#fff}.nav{max-width:1100px;margin:auto;min-height:70px;padding:0 20px;display:flex;align-items:center;justify-content:space-between}.logo{color:#fff;text-decoration:none;font-size:25px;font-weight:800;letter-spacing:3px}.nav a:last-child{color:#fff;text-decoration:none;font-size:14px}
+.container{max-width:1100px;margin:45px auto;padding:0 20px}h1{font-size:34px;margin-bottom:30px}.layout{display:grid;grid-template-columns:1fr 360px;gap:30px;align-items:start}.box{background:#fff;padding:25px;border-radius:8px;box-shadow:0 3px 15px rgba(0,0,0,.05);margin-bottom:20px}h2{font-size:21px;margin-bottom:20px}
+label{display:block;font-weight:700;font-size:14px;margin:15px 0 7px}input,textarea,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:4px;font:inherit}textarea{min-height:90px;resize:vertical}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.place-order{width:100%;padding:15px;background:#111;color:#fff;border:0;border-radius:4px;font-weight:700;font-size:15px;cursor:pointer;margin-top:20px}.place-order:disabled{opacity:.6;cursor:not-allowed}
+.item{display:flex;gap:12px;border-bottom:1px solid #eee;padding:12px 0}.item:last-child{border-bottom:0}.item img{width:60px;height:60px;object-fit:contain;background:#f3f3f3;border-radius:4px}.item-info{flex:1;font-size:14px}.item-total{font-weight:700}
+.summary-row{display:flex;justify-content:space-between;margin-bottom:15px;color:#555}.total{border-top:1px solid #ddd;padding-top:18px;margin-top:18px;font-size:20px;font-weight:800;color:#111}.error{display:none;background:#ffeaea;border:1px solid #e0a0a0;color:#8a1111;padding:12px;border-radius:5px;margin-bottom:15px}.small{font-size:13px;color:#666}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="nav"><a class="logo" href="index.html">URBNVYBE</a><a href="cart.html">← CART</a></div></header>
+<main class="container"><h1>Checkout</h1><div id="errorBox" class="error"></div><div class="layout">
+<form id="checkoutForm" class="box">
+<h2>Delivery Details</h2>
+<label>Full Name *</label><input id="name" required>
+<div class="grid2"><div><label>Mobile Number *</label><input id="phone" type="tel" required pattern="[0-9]{10}" maxlength="10"></div><div><label>Email</label><input id="email" type="email"></div></div>
+<label>Full Address *</label><textarea id="address" required></textarea>
+<div class="grid2"><div><label>City *</label><input id="city" required></div><div><label>PIN Code *</label><input id="pincode" required pattern="[0-9]{6}" maxlength="6"></div></div>
+<div class="grid2"><div><label>State *</label><input id="state" value="Gujarat" required></div><div><label>Payment Method</label><select id="payment"><option value="COD">Cash on Delivery</option></select></div></div>
+<label>Order Note</label><textarea id="note" placeholder="Optional"></textarea>
+<button class="place-order" id="placeOrder" type="submit">PLACE ORDER</button>
+<p class="small" style="margin-top:12px">Your order will be recorded in the URBNVYBE Google Sheet.</p>
+</form>
+<div class="box"><h2>Order Summary</h2><div id="summary"></div></div>
+</div></main>
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbzzW9XtaXrMbm2YS1CFpoBu4tz2h2huBGNwmybtB36OFC3HQ02A7EoXhHZFmf-5O2ohFQ/exec";let cart=JSON.parse(localStorage.getItem("urbnvybe_cart")||"[]");
+function money(v){return Number(v||0).toLocaleString("en-IN")}
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function error(msg){const b=document.getElementById("errorBox");b.textContent=msg;b.style.display="block";window.scrollTo({top:0,behavior:"smooth"})}
+function render(){
+ const s=document.getElementById("summary"),btn=document.getElementById("placeOrder");
+ if(!cart.length){s.innerHTML="<p>Your cart is empty.</p>";btn.disabled=true;return}
+ const subtotal=cart.reduce((t,i)=>t+Number(i.Price||0)*Number(i.quantity||0),0);
+ s.innerHTML=cart.map(i=>`<div class="item">${i.Image?`<img src="${esc(i.Image)}" alt="">`:""}<div class="item-info"><strong>${esc(i.ProductName)}</strong><br>Size: ${esc(i.Size)} · Qty: ${Number(i.quantity)}<br>SKU: ${esc(i.SKU)}</div><div class="item-total">₹${money(Number(i.Price)*Number(i.quantity))}</div></div>`).join("")+
+ `<div class="summary-row" style="margin-top:20px"><span>Subtotal</span><strong>₹${money(subtotal)}</strong></div><div class="summary-row"><span>Shipping</span><strong>FREE</strong></div><div class="summary-row total"><span>Total</span><span>₹${money(subtotal)}</span></div>`;
+}
+document.getElementById("checkoutForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!cart.length){error("Your cart is empty.");return}
+ const btn=document.getElementById("placeOrder");btn.disabled=true;btn.textContent="PLACING ORDER...";
+ const customer={name:name.value.trim(),phone:phone.value.trim(),email:email.value.trim(),address:address.value.trim(),city:city.value.trim(),pincode:pincode.value.trim(),state:state.value.trim(),paymentMethod:payment.value,note:note.value.trim()};
+ try{
+  const body=new URLSearchParams();body.set("payload",JSON.stringify({customer,items:cart}));
+  const r=await fetch(API_URL+"?action=createOrder",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body});
+  const d=await r.json();if(!d.success)throw new Error(d.error||"Unable to place order.");
+  localStorage.setItem("urbnvybe_last_order",JSON.stringify(d));localStorage.removeItem("urbnvybe_cart");
+  location.href="order-success.html?orderId="+encodeURIComponent(d.orderId||"");
+ }catch(err){console.error(err);error(err.message);btn.disabled=false;btn.textContent="PLACE ORDER"}
+});
+render();
+</script>
+</body>
+</html>
