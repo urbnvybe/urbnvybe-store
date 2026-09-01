@@ -525,164 +525,87 @@ Loading product...
 <script>
 const API_BASE="https://script.google.com/macros/s/AKfycbzzW9XtaXrMbm2YS1CFpoBu4tz2h2huBGNwmybtB36OFC3HQ02A7EoXhHZFmf-5O2ohFQ/exec";
 const API_URL=API_BASE+"?action=products";
-const params=new URLSearchParams(window.location.search);
-const productId=params.get("id");
-
+const params=new URLSearchParams(location.search);
+const productId=(params.get("id")||"").trim();
 let cart=JSON.parse(localStorage.getItem("urbnvybe_cart")||"[]");
 let currentProduct=null,variants=[],selectedVariant=null,quantity=1;
 
-function updateCartCount(){
-  const n=cart.reduce((t,i)=>t+Number(i.quantity||0),0);
-  const e=document.getElementById("cartCount"); if(e)e.textContent=n;
+function updateCartCount(){const e=document.getElementById("cartCount");if(e)e.textContent=cart.reduce((n,i)=>n+Number(i.quantity||0),0)}
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function escJS(v){return String(v??"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\r?\n/g,"\\n")}
+function money(v){return Number(v||0).toLocaleString("en-IN")}
+function key(o,n){if(!o||typeof o!=="object")return undefined;const k=Object.keys(o).find(x=>x.toLowerCase()===n.toLowerCase());return k?o[k]:undefined}
+function findVariantList(product){
+  const found=[];
+  const seen=new Set();
+  function walk(x,depth){
+    if(!x||depth>5)return;
+    if(typeof x!=="object")return;
+    if(seen.has(x))return;seen.add(x);
+    if(Array.isArray(x)){
+      for(const item of x){
+        if(item&&typeof item==="object"){
+          const size=key(item,"Size"), vid=key(item,"VariantID"), sku=key(item,"SKU");
+          if(size!==undefined && (vid!==undefined||sku!==undefined)) found.push(item);
+        }
+        walk(item,depth+1);
+      }
+    }else{
+      for(const k of Object.keys(x)) walk(x[k],depth+1);
+    }
+  }
+  walk(product,0);
+  const unique=[];const ids=new Set();
+  for(const v of found){const id=String(key(v,"VariantID")??key(v,"SKU")??JSON.stringify(v));if(!ids.has(id)){ids.add(id);unique.push(v)}}
+  return unique;
 }
-function asArray(v){
-  if(Array.isArray(v))return v;
-  if(typeof v==="string"&&v.trim()){try{const x=JSON.parse(v);return Array.isArray(x)?x:[]}catch(e){}}
-  return [];
+function normalizeVariants(product){
+  return findVariantList(product).map(v=>({
+    VariantID:String(key(v,"VariantID")??""),ProductID:String(key(v,"ProductID")??product.ProductID??""),SKU:String(key(v,"SKU")??""),
+    ColorCode:String(key(v,"ColorCode")??product.ColorCode??""),Size:String(key(v,"Size")??"").trim(),
+    Price:Number(key(v,"Price")??product.Price??0),ComparePrice:Number(key(v,"ComparePrice")??product.ComparePrice??0),
+    Stock:Number(key(v,"Stock")??0),Status:String(key(v,"Status")??"Active").trim(),Image:String(key(v,"Image")??"")
+  })).filter(v=>v.Size!=="");
 }
-
 async function loadProduct(){
-  const page=document.getElementById("page");
-  if(!productId){showError("Product ID is missing.");return;}
+  if(!productId){showError("Product ID is missing.");return}
   try{
     const r=await fetch(API_URL,{cache:"no-store"});
-    if(!r.ok)throw new Error("Unable to connect to the store API.");
+    if(!r.ok)throw Error("Unable to connect to the store API.");
     const data=await r.json();
-    if(!data.success)throw new Error(data.error||"Unable to load products.");
-
-    const product=(data.products||[]).find(p=>String(p.ProductID||"").trim()===String(productId).trim());
-    if(!product)throw new Error("Product not found.");
+    if(!data.success)throw Error(data.error||"Unable to load products.");
+    const product=(data.products||[]).find(p=>String(p.ProductID??"").trim()===productId);
+    if(!product)throw Error("Product not found: "+productId);
     currentProduct=product;
-
-    variants=asArray(product.variants);
-    if(!variants.length)variants=asArray(data.variants).filter(v=>String(v.ProductID||"").trim()===String(product.ProductID).trim());
-
-    /* Fallback for APIs that expose a separate variants action. */
-    if(!variants.length){
-      try{
-        const vr=await fetch(API_BASE+"?action=variants&productId="+encodeURIComponent(product.ProductID),{cache:"no-store"});
-        if(vr.ok){
-          const vd=await vr.json();
-          if(vd.success)variants=asArray(vd.variants).length?asArray(vd.variants):asArray(vd.data);
-        }
-      }catch(e){console.warn("Variant fallback:",e);}
-    }
-
-    variants=variants.map(v=>({
-      VariantID:v.VariantID||"",
-      ProductID:v.ProductID||product.ProductID,
-      SKU:v.SKU||"",
-      ColorCode:v.ColorCode||product.ColorCode||"",
-      Size:String(v.Size||"").trim(),
-      Price:Number(v.Price||product.Price||0),
-      ComparePrice:Number(v.ComparePrice||product.ComparePrice||0),
-      Stock:Number(v.Stock||0),
-      Status:String(v.Status||"Active").trim(),
-      Image:v.Image||""
-    })).filter(v=>
-      String(v.ProductID).trim()===String(product.ProductID).trim() &&
-      v.Size!=="" &&
-      String(v.Status).toLowerCase()==="active"
-    );
-
+    variants=normalizeVariants(product);
     document.title=(product.ProductName||"Product")+" | URBNVYBE";
     renderProduct(product);
-  }catch(e){console.error(e);showError(e.message||"Unable to load product.");}
+  }catch(e){console.error(e);showError(e.message||"Unable to load product.")}
 }
-
-function showError(message){
-  document.getElementById("page").innerHTML=`<div class="message"><h2>Unable to load product</h2><p style="margin-top:15px;">${escapeHTML(message)}</p><p style="margin-top:20px;"><a href="index.html">Back to Shop</a></p></div>`;
-}
-
-function renderProduct(product){
+function showError(m){document.getElementById("page").innerHTML='<div class="message"><h2>Unable to load product</h2><p style="margin-top:15px">'+esc(m)+'</p><p style="margin-top:20px"><a href="index.html">Back to Shop</a></p></div>'}
+function renderProduct(p){
   const page=document.getElementById("page");
-  const images=[product.MainImage,product.BackImage,product.SideImage,product.SleeveImage,product.CollarImage,product.ModelImage].filter(x=>x&&String(x).trim()!=="");
-  if(!images.length)images.push("");
-
-  page.innerHTML=`
-  <div class="product-container">
-    <div class="gallery">
-      <div class="main-image">${images[0]?`<img id="mainProductImage" src="${escapeHTML(images[0])}" alt="${escapeHTML(product.ProductName||"Product")}">`:`<span>Product Image</span>`}</div>
-      <div class="thumbnail-container">${images.map((im,i)=>im?`<div class="thumbnail ${i===0?"active":""}" onclick="changeImage('${escapeJS(im)}',this)"><img src="${escapeHTML(im)}" alt="Product view"></div>`:"").join("")}</div>
-    </div>
-    <div class="product-info">
-      <div class="category">${escapeHTML(product.Category||"")}</div>
-      <h1 class="product-title">${escapeHTML(product.ProductName||"")}</h1>
-      <div class="price-row"><span class="price" id="productPrice">₹${formatMoney(product.Price)}</span><span class="compare-price" id="comparePrice">${Number(product.ComparePrice||0)>0?"₹"+formatMoney(product.ComparePrice):""}</span></div>
-      <div class="description">${escapeHTML(product.Description||"")}</div>
-      <div class="option"><div class="option-title">Colour</div><div class="color-value">${escapeHTML(product.Color||product.ColorCode||"Navy Blue")}</div></div>
-      <div class="option"><div class="option-title">Size</div><div id="sizeButtons" class="size-buttons"></div><div id="stockMessage" class="stock-message">Select a size.</div></div>
-      <div class="option"><div class="option-title">Quantity</div><div class="quantity-box"><button id="minusButton" onclick="decreaseQuantity()">−</button><span id="quantity">1</span><button id="plusButton" onclick="increaseQuantity()">+</button></div></div>
-      <div class="actions"><button id="addCartButton" class="add-cart" onclick="handleAddToCart()" disabled>SELECT SIZE</button><button id="buyNowButton" class="buy-now" onclick="handleBuyNow()" disabled>SELECT SIZE</button></div>
-    </div>
-  </div>
-  <div class="details"><div class="detail-box"><h2>Product Details</h2><p>${escapeHTML(product.Description||"Premium quality product designed for everyday comfort and style.")}</p>${product.Material?`<p style="margin-top:15px;"><strong>Material:</strong> ${escapeHTML(product.Material)}</p>`:""}${product.Gender?`<p><strong>Gender:</strong> ${escapeHTML(product.Gender)}</p>`:""}</div></div>`;
+  const images=[p.MainImage,p.BackImage,p.SideImage,p.SleeveImage,p.CollarImage,p.ModelImage].filter(x=>String(x??"").trim());
+  page.innerHTML='<div class="product-container"><div class="gallery"><div class="main-image">'+(images[0]?'<img id="mainProductImage" src="'+esc(images[0])+'" alt="'+esc(p.ProductName)+'">':'<span>Product Image</span>')+'</div><div class="thumbnail-container">'+images.map((im,i)=>'<div class="thumbnail '+(i===0?'active':'')+'" onclick="changeImage(\''+escJS(im)+'\',this)"><img src="'+esc(im)+'" alt="Product view"></div>').join('')+'</div></div><div class="product-info"><div class="category">'+esc(p.Category||'')+'</div><h1 class="product-title">'+esc(p.ProductName||'')+'</h1><div class="price-row"><span class="price" id="productPrice">₹'+money(p.Price)+'</span><span class="compare-price" id="comparePrice">'+(Number(p.ComparePrice||0)?'₹'+money(p.ComparePrice):'')+'</span></div><div class="description">'+esc(p.Description||'')+'</div><div class="option"><div class="option-title">Colour</div><div class="color-value">'+esc(p.Color||p.ColorCode||'Navy Blue')+'</div></div><div class="option"><div class="option-title">Size</div><div id="sizeButtons" class="size-buttons"></div><div id="stockMessage" class="stock-message">Select a size.</div></div><div class="option"><div class="option-title">Quantity</div><div class="quantity-box"><button id="minusButton" onclick="decreaseQuantity()">−</button><span id="quantity">1</span><button id="plusButton" onclick="increaseQuantity()">+</button></div></div><div class="actions"><button id="addCartButton" class="add-cart" onclick="handleAddToCart()" disabled>SELECT SIZE</button><button id="buyNowButton" class="buy-now" onclick="handleBuyNow()" disabled>SELECT SIZE</button></div></div></div><div class="details"><div class="detail-box"><h2>Product Details</h2><p>'+esc(p.Description||'Premium quality product.')+'</p>'+(p.Material?'<p style="margin-top:15px"><strong>Material:</strong> '+esc(p.Material)+'</p>':'')+(p.Gender?'<p><strong>Gender:</strong> '+esc(p.Gender)+'</p>':'')+'</div></div>';
   renderVariants();
 }
-
 function renderVariants(){
-  const c=document.getElementById("sizeButtons");if(!c)return;c.innerHTML="";
-  if(!variants.length){c.innerHTML="<span>No sizes available.</span>";document.getElementById("stockMessage").textContent="No active sizes are available.";return;}
-
-  const order=["XS","S","M","L","XL","XXL","3XL","4XL","5XL"],sizes=[];
-  variants.forEach(v=>{if(v.Size&&!sizes.includes(v.Size))sizes.push(v.Size);});
-  sizes.sort((a,b)=>{const ai=order.indexOf(a.toUpperCase()),bi=order.indexOf(b.toUpperCase());if(ai>=0&&bi>=0)return ai-bi;if(ai>=0)return-1;if(bi>=0)return 1;return a.localeCompare(b);});
-
-  sizes.forEach(size=>{
-    const group=variants.filter(v=>v.Size.toUpperCase()===size.toUpperCase());
-    const v=group.find(x=>x.Stock>0)||group[0],stock=Number(v.Stock||0);
-    const b=document.createElement("button");b.type="button";b.className="size-button";b.textContent=size;b.dataset.size=size;
-    if(stock<=0){b.disabled=true;b.title="Out of stock";}else b.onclick=()=>selectVariant(v);
-    c.appendChild(b);
-  });
+  const c=document.getElementById("sizeButtons"),msg=document.getElementById("stockMessage");if(!c)return;c.innerHTML="";
+  const active=variants.filter(v=>String(v.Status||"Active").toLowerCase()!=="inactive" && String(v.Status||"Active").toLowerCase()!=="disabled");
+  const order=["XS","S","M","L","XL","XXL","3XL","4XL","5XL"];const sizes=[...new Set(active.map(v=>v.Size))].sort((a,b)=>{let ai=order.indexOf(a.toUpperCase()),bi=order.indexOf(b.toUpperCase());if(ai<0)ai=99;if(bi<0)bi=99;return ai-bi||a.localeCompare(b)});
+  if(!sizes.length){c.innerHTML='<span>No sizes available.</span>';msg.textContent='No active sizes are available.';return}
+  sizes.forEach(size=>{const group=active.filter(v=>v.Size.toUpperCase()===size.toUpperCase());const v=group.find(x=>x.Stock>0)||group[0];const b=document.createElement('button');b.type='button';b.className='size-button';b.textContent=size;b.dataset.size=size;if(Number(v.Stock)<=0){b.disabled=true;b.title='Out of stock'}else b.onclick=()=>selectVariant(v);c.appendChild(b)});
 }
-
-function selectVariant(v){
-  selectedVariant=v;quantity=1;
-  document.querySelectorAll(".size-button").forEach(b=>b.classList.toggle("selected",b.dataset.size.toUpperCase()===String(v.Size).toUpperCase()));
-  document.getElementById("productPrice").textContent="₹"+formatMoney(v.Price);
-  document.getElementById("comparePrice").textContent=Number(v.ComparePrice)>0?"₹"+formatMoney(v.ComparePrice):"";
-  document.getElementById("quantity").textContent=quantity;
-  document.getElementById("stockMessage").textContent=stockMessage(v.Stock);
-  const ok=Number(v.Stock)>0;
-  const a=document.getElementById("addCartButton"),b=document.getElementById("buyNowButton");
-  a.disabled=!ok;b.disabled=!ok;a.textContent=ok?"ADD TO CART":"OUT OF STOCK";b.textContent=ok?"BUY NOW":"OUT OF STOCK";
-  updateQuantityButtons();
-}
-function stockMessage(s){return s<=0?"Out of stock.":s<=5?"Only "+s+" left in stock.":s+" available.";}
-function increaseQuantity(){if(!selectedVariant)return;const s=Number(selectedVariant.Stock||0);if(quantity<s)quantity++;document.getElementById("quantity").textContent=quantity;updateQuantityButtons();}
-function decreaseQuantity(){if(quantity>1)quantity--;document.getElementById("quantity").textContent=quantity;updateQuantityButtons();}
-function updateQuantityButtons(){const m=document.getElementById("minusButton"),p=document.getElementById("plusButton");if(!m||!p)return;if(!selectedVariant){m.disabled=p.disabled=true;return;}const s=Number(selectedVariant.Stock||0);m.disabled=quantity<=1;p.disabled=quantity>=s;}
-
-function handleAddToCart(){
-  if(!selectedVariant){alert("Please select a size.");return;}
-  const stock=Number(selectedVariant.Stock||0);if(stock<=0){alert("This size is out of stock.");return;}
-  const existing=cart.find(i=>String(i.ProductID)===String(currentProduct.ProductID)&&String(i.VariantID)===String(selectedVariant.VariantID));
-  if(existing){if(Number(existing.quantity)+quantity>stock){alert("Only "+stock+" available.");return;}existing.quantity=Number(existing.quantity)+quantity;}
-  else cart.push({
-    ProductID:currentProduct.ProductID,VariantID:selectedVariant.VariantID,SKU:selectedVariant.SKU,
-    ProductName:currentProduct.ProductName,Color:currentProduct.Color||selectedVariant.ColorCode||"",
-    ColorCode:selectedVariant.ColorCode||"",Size:selectedVariant.Size,Price:Number(selectedVariant.Price||0),
-    ComparePrice:Number(selectedVariant.ComparePrice||0),Stock:stock,
-    Image:currentProduct.MainImage||selectedVariant.Image||"",quantity:quantity
-  });
-  localStorage.setItem("urbnvybe_cart",JSON.stringify(cart));updateCartCount();
-  alert(currentProduct.ProductName+" ("+selectedVariant.Size+") added to cart!");
-}
-
-function handleBuyNow(){
-  if(!selectedVariant){alert("Please select a size.");return;}
-  handleAddToCart();
-  setTimeout(()=>window.location.href="cart.html",100);
-}
-function showCart(){window.location.href="cart.html";}
-function changeImage(image,thumb){const m=document.getElementById("mainProductImage");if(m)m.src=image;document.querySelectorAll(".thumbnail").forEach(x=>x.classList.remove("active"));thumb.classList.add("active");}
-function formatMoney(v){return Number(v||0).toLocaleString("en-IN");}
-function escapeHTML(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
-function escapeJS(v){return String(v||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\r?\n/g,"\\n");}
-
-updateCartCount();
-loadProduct();
+function selectVariant(v){selectedVariant=v;quantity=1;document.querySelectorAll('.size-button').forEach(b=>b.classList.toggle('selected',b.dataset.size.toUpperCase()===v.Size.toUpperCase()));document.getElementById('productPrice').textContent='₹'+money(v.Price);document.getElementById('comparePrice').textContent=Number(v.ComparePrice)>0?'₹'+money(v.ComparePrice):'';document.getElementById('quantity').textContent=1;document.getElementById('stockMessage').textContent=Number(v.Stock)<=5?'Only '+v.Stock+' left in stock.':v.Stock+' available.';document.getElementById('addCartButton').disabled=Number(v.Stock)<=0;document.getElementById('buyNowButton').disabled=Number(v.Stock)<=0;document.getElementById('addCartButton').textContent='ADD TO CART';document.getElementById('buyNowButton').textContent='BUY NOW';updateQuantityButtons()}
+function increaseQuantity(){if(selectedVariant&&quantity<Number(selectedVariant.Stock))quantity++;document.getElementById('quantity').textContent=quantity;updateQuantityButtons()}
+function decreaseQuantity(){if(quantity>1)quantity--;document.getElementById('quantity').textContent=quantity;updateQuantityButtons()}
+function updateQuantityButtons(){const m=document.getElementById('minusButton'),p=document.getElementById('plusButton');if(!m||!p)return;m.disabled=quantity<=1;p.disabled=!selectedVariant||quantity>=Number(selectedVariant.Stock)}
+function add(){if(!selectedVariant){alert('Please select a size.');return false}const stock=Number(selectedVariant.Stock);if(stock<quantity){alert('Only '+stock+' available.');return false}const existing=cart.find(i=>String(i.ProductID)===String(currentProduct.ProductID)&&String(i.VariantID)===String(selectedVariant.VariantID));if(existing)existing.quantity=Number(existing.quantity)+quantity;else cart.push({ProductID:currentProduct.ProductID,VariantID:selectedVariant.VariantID,SKU:selectedVariant.SKU,ProductName:currentProduct.ProductName,Color:currentProduct.Color||selectedVariant.ColorCode||'',ColorCode:selectedVariant.ColorCode||'',Size:selectedVariant.Size,Price:selectedVariant.Price,ComparePrice:selectedVariant.ComparePrice,Stock:stock,Image:currentProduct.MainImage||selectedVariant.Image||'',quantity});localStorage.setItem('urbnvybe_cart',JSON.stringify(cart));updateCartCount();return true}
+function handleAddToCart(){if(add())alert(currentProduct.ProductName+' ('+selectedVariant.Size+') added to cart!')}
+function handleBuyNow(){if(add())location.href='cart.html'}
+function showCart(){location.href='cart.html'}
+function changeImage(image,thumb){const m=document.getElementById('mainProductImage');if(m)m.src=image;document.querySelectorAll('.thumbnail').forEach(x=>x.classList.remove('active'));thumb.classList.add('active')}
+updateCartCount();loadProduct();
 </script>
 
 </body>
