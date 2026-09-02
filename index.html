@@ -1,157 +1,496 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>URBNVYBE | Premium T-Shirts</title>
-<meta name="description" content="Shop premium everyday T-shirts from URBNVYBE.">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,Helvetica,sans-serif;background:#f6f6f6;color:#111}
-header{background:#111;color:#fff;position:sticky;top:0;z-index:1000}
-.nav{max-width:1200px;margin:auto;height:70px;padding:0 20px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:25px;font-weight:800;letter-spacing:3px;color:#fff;text-decoration:none}
-.nav-right{display:flex;align-items:center;gap:25px}
-.nav-link,.cart-link{color:#fff;text-decoration:none;font-size:14px}
-.hero{background:#111;color:#fff;min-height:420px;display:flex;align-items:center;justify-content:center;text-align:center;padding:60px 20px}
-.hero-content{max-width:750px}
-.hero h1{font-size:clamp(42px,7vw,78px);line-height:1;margin-bottom:20px;letter-spacing:-2px}
-.hero p{font-size:18px;color:#ccc;margin-bottom:30px}
-.shop-btn{display:inline-block;background:#fff;color:#111;padding:15px 32px;border-radius:4px;text-decoration:none;font-weight:bold}
-.container{max-width:1200px;margin:auto;padding:60px 20px}
-.section-title{text-align:center;margin-bottom:40px}
-.section-title h2{font-size:32px;margin-bottom:8px}
-.section-title p{color:#777}
-#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:25px}
-.product-card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.07);transition:.2s}
-.product-card:hover{transform:translateY(-5px);box-shadow:0 10px 30px rgba(0,0,0,.12)}
-.product-image{width:100%;aspect-ratio:1/1;background:#eee;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.product-image img{width:100%;height:100%;object-fit:cover;transition:.3s}
-.product-card:hover .product-image img{transform:scale(1.04)}
-.product-info{padding:20px}
-.product-category{color:#888;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.product-name{font-size:18px;font-weight:700;margin-bottom:10px}
-.product-description{color:#666;font-size:14px;line-height:1.5;margin-bottom:15px}
-.price-row{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.price{font-size:20px;font-weight:800}
-.compare-price{color:#999;text-decoration:line-through;font-size:14px}
-.product-buttons{display:flex;gap:8px}
-.view-btn,.cart-btn{flex:1;padding:11px 8px;border-radius:4px;cursor:pointer;font-weight:700;font-size:13px}
-.view-btn{background:#fff;border:1px solid #111}
-.cart-btn{background:#111;color:#fff;border:1px solid #111}
-.loading{text-align:center;grid-column:1/-1;padding:50px;color:#777}
-footer{background:#111;color:#fff;margin-top:40px;padding:50px 20px;text-align:center}
-footer h3{letter-spacing:3px;margin-bottom:10px}
-footer p{color:#aaa;font-size:14px}
-@media(max-width:600px){
-  .nav{height:60px}.logo{font-size:20px}.nav-link{display:none}
-  .hero{min-height:350px}.hero h1{font-size:48px}.hero p{font-size:15px}
-  .container{padding:45px 15px}
-  #products{grid-template-columns:repeat(2,1fr);gap:12px}
-  .product-info{padding:12px}.product-name{font-size:15px}
-  .product-description{font-size:12px}.price{font-size:17px}
-  .compare-price{font-size:12px}.product-buttons{flex-direction:column}
-}
-</style>
-</head>
-<body>
-<header>
-  <div class="nav">
-    <a class="logo" href="index.html">URBNVYBE</a>
-    <div class="nav-right">
-      <a class="nav-link" href="#products">SHOP</a>
-      <a class="cart-link" href="cart.html">🛒 Cart (<span id="cartCount">0</span>)</a>
-    </div>
-  </div>
-</header>
-
-<section class="hero">
-  <div class="hero-content">
-    <h1>WEAR YOUR VIBE.</h1>
-    <p>Premium T-shirts designed for everyday style.</p>
-    <a class="shop-btn" href="#products">SHOP NOW</a>
-  </div>
-</section>
-
-<main class="container">
-  <div class="section-title">
-    <h2>Latest Collection</h2>
-    <p>Discover your next favourite T-shirt.</p>
-  </div>
-  <div id="products">
-    <div class="loading">Loading products...</div>
-  </div>
-</main>
-
-<footer>
-  <h3>URBNVYBE</h3>
-  <p>Premium Everyday Wear</p>
-  <p style="margin-top:15px">© 2026 URBNVYBE. All rights reserved.</p>
-</footer>
-
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyo1cxZFeA3uN13nY02kPUITiatINQOJ8KbzGecmVWxXKbhG3cSVfE9OZNTE_C_SyITuQ/exec";
-
-let cart = JSON.parse(localStorage.getItem("urbnvybe_cart") || "[]");
-
-function updateCartCount() {
-  document.getElementById("cartCount").textContent = cart.reduce((t, i) => t + Number(i.quantity || 0), 0);
-}
-
-function openProduct(p) {
-  location.href = "product.html?id=" + encodeURIComponent(p.ProductID);
-}
-
-function escapeHTML(v) {
-  return String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-}
-
-async function loadProducts() {
-  const box = document.getElementById("products");
-  try {
-    const r = await fetch(API_URL + "?action=products");
-    const d = await r.json();
-    if (!d.success) throw new Error(d.error || "Unable to load products.");
-
-    const products = d.products || [];
-    if (!products.length) {
-      box.innerHTML = '<div class="loading">No products available.</div>';
-      return;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URBNVYBE | Premium T-Shirts</title>
+  <meta name="description" content="Shop premium everyday T-shirts from URBNVYBE. Buy 3 for ₹999, COD available.">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
     }
 
-    box.innerHTML = "";
-    products.forEach(p => {
-      const card = document.createElement("div");
-      card.className = "product-card";
-      const image = p.MainImage || "";
-      card.innerHTML = `
-        <div class="product-image">
-          ${image ? `<img src="${escapeHTML(image)}" alt="${escapeHTML(p.ProductName)}" loading="lazy">` : '<div class="loading">Product Image</div>'}
-        </div>
-        <div class="product-info">
-          <div class="product-category">${escapeHTML(p.Category || "")}</div>
-          <div class="product-name">${escapeHTML(p.ProductName || "")}</div>
-          <div class="product-description">${escapeHTML(p.Description || "")}</div>
-          <div class="price-row">
-            <span class="price">₹${Number(p.Price || 0).toLocaleString("en-IN")}</span>
-            ${p.ComparePrice ? `<span class="compare-price">₹${Number(p.ComparePrice).toLocaleString("en-IN")}</span>` : ""}
-          </div>
-          <div class="product-buttons">
-            <button class="view-btn">VIEW</button>
-            <button class="cart-btn">SELECT SIZE</button>
-          </div>
-        </div>`;
-      card.querySelector(".view-btn").onclick = () => openProduct(p);
-      card.querySelector(".cart-btn").onclick = () => openProduct(p);
-      box.appendChild(card);
-    });
-  } catch (e) {
-    box.innerHTML = `<div class="loading"><h3>Unable to load products</h3><p>${escapeHTML(e.message)}</p></div>`;
-  }
-}
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f4ef;
+      color: #111
+    }
 
-updateCartCount();
-loadProducts();
-</script>
+    a {
+      color: inherit
+    }
+
+    header {
+      background: #111;
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 100
+    }
+
+    .nav {
+      max-width: 1200px;
+      margin: auto;
+      height: 64px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-decoration: none;
+      color: #fff;
+      flex-shrink: 0
+    }
+
+    .search-wrap {
+      flex: 1;
+      max-width: 420px;
+      margin: 0 auto
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: none;
+      font-size: 13px;
+      background: #222;
+      color: #fff
+    }
+
+    .search-wrap input::placeholder {
+      color: #888
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-left: auto
+    }
+
+    .nav-right a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600
+    }
+
+    .ticker {
+      background: #4a5d73;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      overflow: hidden;
+      white-space: nowrap
+    }
+
+    .ticker-inner {
+      display: inline-block;
+      padding: 8px 0;
+      animation: marquee 28s linear infinite
+    }
+
+    @keyframes marquee {
+      0% {
+        transform: translateX(0)
+      }
+
+      100% {
+        transform: translateX(-50%)
+      }
+    }
+
+    .hero {
+      background: #111;
+      color: #fff;
+      padding: 56px 16px;
+      text-align: center
+    }
+
+    .hero h1 {
+      font-size: clamp(40px, 8vw, 72px);
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 12px
+    }
+
+    .hero p {
+      color: #aaa;
+      font-size: 16px;
+      margin-bottom: 24px
+    }
+
+    .hero .cta {
+      display: inline-block;
+      background: #fff;
+      color: #111;
+      padding: 14px 28px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 800
+    }
+
+    .cats {
+      max-width: 1200px;
+      margin: 24px auto 0;
+      padding: 0 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center
+    }
+
+    .cats button {
+      border: 1px solid #ddd6cb;
+      background: #fffcf8;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .cats button.active {
+      background: #111;
+      color: #fff;
+      border-color: #111
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 28px 16px 60px
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 28px
+    }
+
+    .section-title h2 {
+      font-size: 26px;
+      margin-bottom: 6px
+    }
+
+    .section-title p {
+      color: #5c574f;
+      font-size: 14px
+    }
+
+    #products {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px
+    }
+
+    .product-card {
+      background: #fffcf8;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e8e2d9;
+      transition: transform .2s, box-shadow .2s;
+      cursor: pointer
+    }
+
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, .08)
+    }
+
+    .product-image {
+      aspect-ratio: 3/4;
+      background: #e8e2d9;
+      overflow: hidden
+    }
+
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block
+    }
+
+    .product-info {
+      padding: 14px
+    }
+
+    .product-category {
+      color: #888;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px
+    }
+
+    .product-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.3
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px
+    }
+
+    .price {
+      font-size: 17px;
+      font-weight: 800
+    }
+
+    .compare {
+      color: #999;
+      text-decoration: line-through;
+      font-size: 13px
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 6px
+    }
+
+    .btn-row button {
+      flex: 1;
+      padding: 10px 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer
+    }
+
+    .view-btn {
+      background: #fff;
+      border: 1px solid #111
+    }
+
+    .cart-btn {
+      background: #111;
+      color: #fff;
+      border: 1px solid #111
+    }
+
+    .loading {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 48px;
+      color: #5c574f
+    }
+
+    footer {
+      background: #111;
+      color: #fff;
+      padding: 40px 16px;
+      text-align: center
+    }
+
+    footer h3 {
+      letter-spacing: 3px;
+      margin-bottom: 8px
+    }
+
+    footer p {
+      color: #888;
+      font-size: 13px
+    }
+
+    footer a {
+      color: #ccc;
+      margin: 0 10px;
+      font-size: 13px;
+      text-decoration: none
+    }
+
+    @media(max-width:900px) {
+      #products {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    @media(max-width:600px) {
+      .search-wrap {
+        display: none
+      }
+
+      #products {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px
+      }
+
+      .product-info {
+        padding: 10px
+      }
+
+      .product-name {
+        font-size: 13px
+      }
+
+      .hero {
+        padding: 40px 16px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="nav">
+      <a class="logo" href="index.html">URBNVYBE</a>
+      <div class="search-wrap">
+        <input id="search" type="search" placeholder="Search tees..." aria-label="Search">
+      </div>
+      <div class="nav-right">
+        <a href="track.html">Track</a>
+        <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+      </div>
+    </div>
+  </header>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-inner">
+      FREE SHIPPING ON EVERY ORDER &nbsp;•&nbsp; BUY 3 FOR ₹999 &nbsp;•&nbsp; BUY 1 GET 1 ON SELECT DROPS &nbsp;•&nbsp;
+      COD AVAILABLE &nbsp;•&nbsp;
+      FREE SHIPPING ON EVERY ORDER &nbsp;•&nbsp; BUY 3 FOR ₹999 &nbsp;•&nbsp; BUY 1 GET 1 ON SELECT DROPS &nbsp;•&nbsp;
+      COD AVAILABLE &nbsp;•&nbsp;
+    </div>
+  </div>
+  <section class="hero">
+    <h1>WEAR YOUR VYBE.</h1>
+    <p>Premium everyday tees. Street-ready fits. Honest prices.</p>
+    <a class="cta" href="#products">SHOP NOW</a>
+  </section>
+  <div class="cats" id="cats">
+    <button type="button" class="active" data-cat="all">All</button>
+    <button type="button" data-cat="Men">Men</button>
+    <button type="button" data-cat="Women">Women</button>
+    <button type="button" data-cat="T-Shirts">T-Shirts</button>
+  </div>
+  <main class="container">
+    <div class="section-title">
+      <h2>Latest drops</h2>
+      <p>Select a size on the product page — promos apply at checkout.</p>
+    </div>
+    <div id="products">
+      <div class="loading">Loading products...</div>
+    </div>
+  </main>
+  <footer>
+    <h3>URBNVYBE</h3>
+    <p>Premium Everyday Wear</p>
+    <p style="margin-top:14px">
+      <a href="index.html">Shop</a>
+      <a href="track.html">Track order</a>
+      <a href="admin.html">Admin</a>
+    </p>
+    <p style="margin-top:16px">© 2026 URBNVYBE</p>
+  </footer>
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyo1cxZFeA3uN13nY02kPUITiatINQOJ8KbzGecmVWxXKbhG3cSVfE9OZNTE_C_SyITuQ/exec";
+    let allProducts = [];
+    let filterCat = "all";
+    let filterQ = "";
+
+    function cart() {
+      return JSON.parse(localStorage.getItem("urbnvybe_cart") || "[]");
+    }
+    function updateCartCount() {
+      document.getElementById("cartCount").textContent = cart().reduce(function (t, i) {
+        return t + Number(i.quantity || i.qty || 0);
+      }, 0);
+    }
+    function escapeHTML(v) {
+      return String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function money(n) {
+      return "₹" + Number(n || 0).toLocaleString("en-IN");
+    }
+    function openProduct(p) {
+      location.href = "product.html?id=" + encodeURIComponent(p.ProductID);
+    }
+    function render() {
+      const box = document.getElementById("products");
+      let list = allProducts.filter(function (p) {
+        return String(p.Status || "").toLowerCase() === "active";
+      });
+      if (filterCat !== "all") {
+        list = list.filter(function (p) {
+          const c = String(p.Category || "");
+          const g = String(p.Gender || "");
+          const sub = String(p.SubCategory || "");
+          return c === filterCat || g === filterCat || sub === filterCat;
+        });
+      }
+      if (filterQ) {
+        const q = filterQ.toLowerCase();
+        list = list.filter(function (p) {
+          return (p.ProductName || "").toLowerCase().indexOf(q) >= 0 ||
+            (p.Tags || "").toLowerCase().indexOf(q) >= 0;
+        });
+      }
+      if (!list.length) {
+        box.innerHTML = "<div class='loading'>No products match.</div>";
+        return;
+      }
+      box.innerHTML = "";
+      list.forEach(function (p) {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        const image = p.MainImage || "";
+        card.innerHTML =
+          "<div class='product-image'>" +
+          (image ? "<img src='" + escapeHTML(image) + "' alt='" + escapeHTML(p.ProductName) + "' loading='lazy'>" : "") +
+          "</div><div class='product-info'>" +
+          "<div class='product-category'>" + escapeHTML(p.Category || "") + "</div>" +
+          "<div class='product-name'>" + escapeHTML(p.ProductName || "") + "</div>" +
+          "<div class='price-row'><span class='price'>" + money(p.Price) + "</span>" +
+          (p.ComparePrice ? "<span class='compare'>" + money(p.ComparePrice) + "</span>" : "") +
+          "</div><div class='btn-row'>" +
+          "<button type='button' class='view-btn'>VIEW</button>" +
+          "<button type='button' class='cart-btn'>SELECT SIZE</button>" +
+          "</div></div>";
+        card.querySelector(".view-btn").onclick = function (e) { e.stopPropagation(); openProduct(p); };
+        card.querySelector(".cart-btn").onclick = function (e) { e.stopPropagation(); openProduct(p); };
+        card.onclick = function () { openProduct(p); };
+        box.appendChild(card);
+      });
+    }
+    async function loadProducts() {
+      const box = document.getElementById("products");
+      try {
+        const r = await fetch(API_URL + "?action=products");
+        const d = await r.json();
+        if (!d.success) throw new Error(d.error || "Unable to load products.");
+        allProducts = d.products || [];
+        render();
+      } catch (e) {
+        box.innerHTML = "<div class='loading'><h3>Unable to load products</h3><p>" + escapeHTML(e.message) + "</p></div>";
+      }
+    }
+    document.getElementById("cats").onclick = function (e) {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      filterCat = btn.getAttribute("data-cat") || "all";
+      document.querySelectorAll("#cats button").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      render();
+    };
+    document.getElementById("search").addEventListener("input", function () {
+      filterQ = this.value.trim();
+      render();
+    });
+    updateCartCount();
+    loadProducts();
+  </script>
 </body>
+
 </html>
