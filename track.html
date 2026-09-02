@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track order | URBNVYBE</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f7f4ef;color:#111}
+header{background:#111;color:#fff}
+.header-inner{max-width:900px;margin:auto;height:64px;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:20px;font-weight:800;letter-spacing:3px;color:#fff;text-decoration:none}
+.nav a{color:#ccc;text-decoration:none;font-size:13px;margin-left:16px}
+main{max-width:640px;margin:40px auto;padding:0 16px}
+h1{font-size:28px;margin-bottom:8px}
+.sub{color:#5c574f;font-size:14px;margin-bottom:22px}
+.box{background:#fffcf8;border:1px solid #e8e2d9;border-radius:12px;padding:22px}
+label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#5c574f;text-transform:uppercase}
+input{width:100%;padding:12px 14px;border:1px solid #ddd6cb;border-radius:8px;font-size:14px;margin-bottom:12px}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;background:#111;color:#f7f4ef;font-weight:800;cursor:pointer}
+.error{display:none;background:#fde8e8;color:#8b1e1e;padding:12px;border-radius:8px;margin-bottom:12px;font-size:14px}
+.result{display:none;margin-top:20px}
+.status{display:inline-block;padding:6px 12px;border-radius:999px;background:#111;color:#fff;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+.meta{margin-top:14px;font-size:14px;color:#5c574f;line-height:1.7}
+.meta strong{color:#111}
+.track-link{display:inline-block;margin-top:10px;color:#4a5d73;font-weight:700}
+.line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0ebe3;font-size:13px}
+.steps{display:flex;gap:6px;margin:16px 0 8px;flex-wrap:wrap}
+.step{flex:1;min-width:70px;text-align:center;font-size:11px;color:#999;padding:8px 4px;border-bottom:3px solid #e8e2d9}
+.step.on{color:#111;border-color:#111;font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a class="logo" href="index.html">URBNVYBE</a>
+    <div class="nav">
+      <a href="index.html">Shop</a>
+      <a href="track.html">Track</a>
+    </div>
+  </div>
+</header>
+<main>
+  <h1>Track your order</h1>
+  <p class="sub">Enter the Order ID from your confirmation page or SMS/email.</p>
+  <div class="box">
+    <div id="error" class="error"></div>
+    <label for="orderId">Order ID</label>
+    <input id="orderId" placeholder="URB-20260901-4284" autocomplete="off">
+    <button class="btn" id="trackBtn" type="button">TRACK ORDER</button>
+    <div class="result" id="result">
+      <div class="steps" id="steps"></div>
+      <div><span class="status" id="status"></span></div>
+      <div class="meta" id="meta"></div>
+      <div id="items" style="margin-top:16px"></div>
+    </div>
+  </div>
+</main>
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyo1cxZFeA3uN13nY02kPUITiatINQOJ8KbzGecmVWxXKbhG3cSVfE9OZNTE_C_SyITuQ/exec";
+
+function money(n) {
+  return "₹" + Math.round(Number(n) || 0).toLocaleString("en-IN");
+}
+
+function statusIndex(s) {
+  s = String(s || "").toLowerCase();
+  if (s.indexOf("cancel") >= 0) return -1;
+  if (s.indexOf("deliver") >= 0) return 3;
+  if (s.indexOf("ship") >= 0 || s.indexOf("dispatch") >= 0) return 2;
+  if (s.indexOf("process") >= 0 || s.indexOf("confirm") >= 0) return 1;
+  return 0; // New
+}
+
+async function track() {
+  const id = document.getElementById("orderId").value.trim();
+  const err = document.getElementById("error");
+  const result = document.getElementById("result");
+  err.style.display = "none";
+  result.style.display = "none";
+  if (!id) {
+    err.style.display = "block";
+    err.textContent = "Enter your Order ID.";
+    return;
+  }
+  document.getElementById("trackBtn").textContent = "SEARCHING...";
+  try {
+    const r = await fetch(API_URL + "?action=track&orderId=" + encodeURIComponent(id));
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || "Order not found");
+    const o = d.order;
+    const idx = statusIndex(o.orderStatus);
+    const labels = ["New", "Processing", "Shipped", "Delivered"];
+    document.getElementById("steps").innerHTML = labels.map(function (lab, i) {
+      return "<div class='step" + (idx >= i ? " on" : "") + "'>" + lab + "</div>";
+    }).join("");
+    document.getElementById("status").textContent = o.orderStatus || "New";
+    let meta = "<div><strong>Order</strong> " + o.orderId + "</div>";
+    meta += "<div><strong>Payment</strong> " + (o.paymentMethod || "") + " · " + (o.paymentStatus || "") + "</div>";
+    meta += "<div><strong>Total</strong> " + money(o.total);
+    if (o.discount) meta += " <span style='color:#5c574f'>(saved " + money(o.discount) + ")</span>";
+    meta += "</div>";
+    if (o.city) meta += "<div><strong>Ship to</strong> " + o.city + (o.state ? ", " + o.state : "") + "</div>";
+    if (o.trackingNumber) {
+      meta += "<div><strong>Tracking no.</strong> " + o.trackingNumber + "</div>";
+    }
+    if (o.trackingUrl) {
+      meta += "<a class='track-link' href='" + o.trackingUrl + "' target='_blank' rel='noopener'>Open carrier tracking →</a>";
+    }
+    document.getElementById("meta").innerHTML = meta;
+    document.getElementById("items").innerHTML = (d.items || []).map(function (it) {
+      return "<div class='line'><span>" + (it.productName || "") + (it.size ? " · " + it.size : "") + " × " + it.quantity + "</span><span>" + money(it.total || it.price * it.quantity) + "</span></div>";
+    }).join("");
+    result.style.display = "block";
+  } catch (e) {
+    err.style.display = "block";
+    err.textContent = e.message || "Unable to track order.";
+  }
+  document.getElementById("trackBtn").textContent = "TRACK ORDER";
+}
+
+document.getElementById("trackBtn").onclick = track;
+document.getElementById("orderId").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") track();
+});
+
+const params = new URLSearchParams(location.search);
+if (params.get("orderId")) {
+  document.getElementById("orderId").value = params.get("orderId");
+  track();
+}
+</script>
+</body>
+</html>
