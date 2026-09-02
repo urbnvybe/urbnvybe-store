@@ -5,83 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | URBNVYBE</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;color:#111;min-height:100vh}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;color:#111;min-height:100vh}
 
-  /* Header */
-  header{background:#111;color:#fff;padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .logo{font-size:20px;font-weight:800;letter-spacing:2px}
-  .header-right{display:flex;align-items:center;gap:15px;font-size:14px}
-  .logout-btn{background:#fff;color:#111;border:none;padding:7px 14px;border-radius:4px;cursor:pointer;font-weight:600}
+header{background:#111;color:#fff;padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:20px;font-weight:800;letter-spacing:2px}
+.header-right{display:flex;align-items:center;gap:15px;font-size:14px}
+.logout-btn{background:#fff;color:#111;border:none;padding:7px 14px;border-radius:4px;cursor:pointer;font-weight:600}
 
-  /* Login */
-  #loginScreen{max-width:400px;margin:100px auto;background:#fff;padding:40px;border-radius:10px;box-shadow:0 5px 25px rgba(0,0,0,.08);text-align:center}
-  #loginScreen h1{margin-bottom:10px;font-size:24px}
-  #loginScreen p{color:#666;margin-bottom:25px;font-size:14px}
-  #loginScreen input{width:100%;padding:14px;border:1px solid #ccc;border-radius:5px;font-size:15px;margin-bottom:15px}
-  #loginScreen button{width:100%;padding:14px;background:#111;color:#fff;border:none;border-radius:5px;font-size:15px;font-weight:700;cursor:pointer}
-  .error-msg{color:#c00;font-size:13px;margin-top:10px;display:none}
+/* Login */
+#loginScreen{max-width:400px;margin:100px auto;background:#fff;padding:40px;border-radius:10px;box-shadow:0 5px 25px rgba(0,0,0,.08);text-align:center}
+#loginScreen h1{margin-bottom:10px;font-size:24px}
+#loginScreen p{color:#666;margin-bottom:25px;font-size:14px}
+#loginScreen input{width:100%;padding:14px;border:1px solid #ccc;border-radius:5px;font-size:15px;margin-bottom:15px}
+#loginScreen button{width:100%;padding:14px;background:#111;color:#fff;border:none;border-radius:5px;font-size:15px;font-weight:700;cursor:pointer}
+.error-msg{color:#c00;font-size:13px;margin-top:10px;display:none}
 
-  /* Main */
-  #adminApp{display:none}
-  .container{max-width:1300px;margin:0 auto;padding:25px 20px}
+/* App */
+#adminApp{display:none}
+.container{max-width:1300px;margin:0 auto;padding:20px}
 
-  /* Toolbar */
-  .toolbar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:25px;align-items:center}
-  .search-box{flex:1;min-width:220px;padding:11px 14px;border:1px solid #ccc;border-radius:5px;font-size:14px}
-  select{padding:11px 12px;border:1px solid #ccc;border-radius:5px;font-size:14px;background:#fff}
-  .refresh-btn{padding:11px 18px;background:#111;color:#fff;border:none;border-radius:5px;cursor:pointer;font-weight:600}
+/* Nav Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:25px;flex-wrap:wrap}
+.tab{padding:11px 20px;background:#fff;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px}
+.tab.active{background:#111;color:#fff;border-color:#111}
 
-  /* Stats */
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;margin-bottom:25px}
-  .stat-card{background:#fff;padding:18px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.05);text-align:center}
-  .stat-card .num{font-size:26px;font-weight:800}
-  .stat-card .label{font-size:12px;color:#777;margin-top:4px}
+/* Toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;align-items:center}
+.search-box{flex:1;min-width:200px;padding:11px 14px;border:1px solid #ccc;border-radius:5px;font-size:14px}
+select, .btn{padding:11px 16px;border:1px solid #ccc;border-radius:5px;font-size:14px;background:#fff;cursor:pointer}
+.btn-primary{background:#111;color:#fff;border-color:#111;font-weight:600}
+.btn-success{background:#2e7d32;color:#fff;border:none;font-weight:600}
 
-  /* Table */
-  .table-wrap{background:#fff;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.05);overflow-x:auto}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th{background:#f8f8f8;text-align:left;padding:13px 12px;font-weight:700;border-bottom:1px solid #eee;white-space:nowrap}
-  td{padding:12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
-  tr:hover{background:#fafafa;cursor:pointer}
-  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
-  .badge-new{background:#e3f2fd;color:#1565c0}
-  .badge-confirmed{background:#e8f5e9;color:#2e7d32}
-  .badge-processing{background:#fff3e0;color:#ef6c00}
-  .badge-shipped{background:#f3e5f5;color:#7b1fa2}
-  .badge-delivered{background:#e0f2f1;color:#00695c}
-  .badge-cancelled{background:#ffebee;color:#c62828}
-  .badge-pending{background:#fff8e1;color:#f9a825}
-  .badge-paid{background:#e8f5e9;color:#2e7d32}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;margin-bottom:25px}
+.stat-card{background:#fff;padding:18px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.05);text-align:center}
+.stat-card .num{font-size:26px;font-weight:800}
+.stat-card .label{font-size:12px;color:#777;margin-top:4px}
 
-  /* Modal */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
-  .modal{background:#fff;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;border-radius:10px;padding:30px}
-  .modal h2{margin-bottom:20px;font-size:22px}
-  .modal-section{margin-bottom:22px}
-  .modal-section h3{font-size:14px;color:#666;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
-  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:14px}
-  .info-grid div{background:#f9f9f9;padding:10px;border-radius:5px}
-  .info-grid strong{display:block;font-size:11px;color:#888;margin-bottom:3px}
-  .item-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:13px}
-  .form-row{margin-bottom:14px}
-  .form-row label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
-  .form-row input,.form-row select,.form-row textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:5px;font-size:14px}
-  .form-row textarea{min-height:70px;resize:vertical}
-  .modal-actions{display:flex;gap:10px;margin-top:25px}
-  .btn{padding:12px 20px;border:none;border-radius:5px;font-weight:700;cursor:pointer;font-size:14px}
-  .btn-primary{background:#111;color:#fff}
-  .btn-secondary{background:#eee;color:#111}
-  .close-btn{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:#666}
+/* Table */
+.table-wrap{background:#fff;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.05);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8f8f8;text-align:left;padding:13px 12px;font-weight:700;border-bottom:1px solid #eee;white-space:nowrap}
+td{padding:12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:hover{background:#fafafa}
+.clickable{cursor:pointer}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-new,.badge-pending{background:#fff8e1;color:#f9a825}
+.badge-confirmed,.badge-paid,.badge-active{background:#e8f5e9;color:#2e7d32}
+.badge-processing{background:#fff3e0;color:#ef6c00}
+.badge-shipped{background:#f3e5f5;color:#7b1fa2}
+.badge-delivered{background:#e0f2f1;color:#00695c}
+.badge-cancelled,.badge-inactive{background:#ffebee;color:#c62828}
 
-  .empty{text-align:center;padding:60px 20px;color:#777}
-  .loading{text-align:center;padding:40px;color:#666}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:200;padding:15px}
+.modal{background:#fff;width:100%;max-width:720px;max-height:92vh;overflow-y:auto;border-radius:10px;padding:28px}
+.modal h2{margin-bottom:18px;font-size:20px}
+.modal-section{margin-bottom:20px}
+.modal-section h3{font-size:13px;color:#666;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:14px}
+.info-grid div{background:#f9f9f9;padding:10px;border-radius:5px}
+.info-grid strong{display:block;font-size:11px;color:#888;margin-bottom:3px}
+.item-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:13px}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:5px;font-size:14px}
+.form-row textarea{min-height:70px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.btn{padding:12px 18px;border-radius:5px;font-weight:700;cursor:pointer;font-size:14px;border:none}
+.btn-dark{background:#111;color:#fff}
+.btn-light{background:#eee;color:#111}
+.close-btn{float:right;background:none;border:none;font-size:24px;cursor:pointer;color:#666}
 
-  @media(max-width:700px){
-    .info-grid{grid-template-columns:1fr}
-    .toolbar{flex-direction:column;align-items:stretch}
-    .stats{grid-template-columns:repeat(2,1fr)}
-  }
+.empty{text-align:center;padding:50px 20px;color:#777}
+.loading{text-align:center;padding:40px;color:#666}
+
+@media(max-width:700px){
+  .info-grid,.form-grid{grid-template-columns:1fr}
+  .tabs{gap:6px}
+  .tab{padding:10px 14px;font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -100,72 +105,103 @@
   <header>
     <div class="logo">URBNVYBE Admin</div>
     <div class="header-right">
-      <span id="orderCountLabel">0 orders</span>
+      <span id="headerInfo">—</span>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </header>
 
   <div class="container">
-    <!-- Stats -->
-    <div class="stats" id="stats"></div>
-
-    <!-- Toolbar -->
-    <div class="toolbar">
-      <input class="search-box" id="searchInput" placeholder="Search Order ID, Name, Phone..." oninput="filterOrders()">
-      <select id="statusFilter" onchange="filterOrders()">
-        <option value="">All Order Status</option>
-        <option value="New">New</option>
-        <option value="Confirmed">Confirmed</option>
-        <option value="Processing">Processing</option>
-        <option value="Shipped">Shipped</option>
-        <option value="Delivered">Delivered</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
-      <select id="paymentFilter" onchange="filterOrders()">
-        <option value="">All Payment Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Paid">Paid</option>
-        <option value="Failed">Failed</option>
-        <option value="Refunded">Refunded</option>
-      </select>
-      <button class="refresh-btn" onclick="loadOrders()">↻ Refresh</button>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="orders" onclick="switchTab('orders')">Orders</div>
+      <div class="tab" data-tab="products" onclick="switchTab('products')">Products</div>
+      <div class="tab" data-tab="customers" onclick="switchTab('customers')">Customers</div>
     </div>
 
-    <!-- Table -->
-    <div class="table-wrap">
-      <div id="ordersTable">
-        <div class="loading">Loading orders...</div>
+    <!-- ==================== ORDERS ==================== -->
+    <div id="tab-orders">
+      <div class="stats" id="orderStats"></div>
+      <div class="toolbar">
+        <input class="search-box" id="orderSearch" placeholder="Search Order ID, Name, Phone..." oninput="filterOrders()">
+        <select id="orderStatusFilter" onchange="filterOrders()">
+          <option value="">All Order Status</option>
+          <option value="New">New</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Processing">Processing</option>
+          <option value="Shipped">Shipped</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+        <select id="paymentFilter" onchange="filterOrders()">
+          <option value="">All Payment</option>
+          <option value="Pending">Pending</option>
+          <option value="Paid">Paid</option>
+          <option value="Failed">Failed</option>
+          <option value="Refunded">Refunded</option>
+        </select>
+        <button class="btn btn-primary" onclick="loadOrders()">↻ Refresh</button>
       </div>
+      <div class="table-wrap"><div id="ordersTable"><div class="loading">Loading...</div></div></div>
+    </div>
+
+    <!-- ==================== PRODUCTS ==================== -->
+    <div id="tab-products" style="display:none">
+      <div class="toolbar">
+        <input class="search-box" id="productSearch" placeholder="Search products..." oninput="filterProducts()">
+        <button class="btn btn-success" onclick="openProductModal()">+ Add Product</button>
+        <button class="btn btn-primary" onclick="loadProducts()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap"><div id="productsTable"><div class="loading">Loading...</div></div></div>
+    </div>
+
+    <!-- ==================== CUSTOMERS ==================== -->
+    <div id="tab-customers" style="display:none">
+      <div class="toolbar">
+        <input class="search-box" id="customerSearch" placeholder="Search name, phone, email..." oninput="filterCustomers()">
+        <button class="btn btn-primary" onclick="loadCustomers()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap"><div id="customersTable"><div class="loading">Loading...</div></div></div>
     </div>
   </div>
 </div>
 
-<!-- ORDER DETAIL MODAL -->
-<div class="modal-overlay" id="modal">
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
   <div class="modal">
-    <button class="close-btn" onclick="closeModal()">×</button>
-    <h2 id="modalTitle">Order Details</h2>
+    <button class="close-btn" onclick="closeOrderModal()">×</button>
+    <h2 id="orderModalTitle">Order Details</h2>
+    <div id="orderModalContent"></div>
+  </div>
+</div>
 
-    <div id="modalContent"></div>
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <button class="close-btn" onclick="closeProductModal()">×</button>
+    <h2 id="productModalTitle">Add Product</h2>
+    <div id="productModalContent"></div>
   </div>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyo1cxZFeA3uN13nY02kPUITiatINQOJ8KbzGecmVWxXKbhG3cSVfE9OZNTE_C_SyITuQ/exec";
+
 let adminPassword = "";
 let allOrders = [];
+let allProducts = [];
+let allCustomers = [];
 let currentOrderId = null;
+let editingProductId = null;
 
+/* ==================== AUTH ==================== */
 function login() {
   const pass = document.getElementById("passwordInput").value.trim();
   if (!pass) return;
-
   adminPassword = pass;
   document.getElementById("loginError").style.display = "none";
 
-  // Test password by loading orders
-  loadOrders().then(success => {
-    if (success) {
+  loadOrders().then(ok => {
+    if (ok) {
       document.getElementById("loginScreen").style.display = "none";
       document.getElementById("adminApp").style.display = "block";
       localStorage.setItem("urbnvybe_admin_pass", pass);
@@ -179,12 +215,9 @@ function login() {
 function logout() {
   adminPassword = "";
   localStorage.removeItem("urbnvybe_admin_pass");
-  document.getElementById("adminApp").style.display = "none";
-  document.getElementById("loginScreen").style.display = "block";
-  document.getElementById("passwordInput").value = "";
+  location.reload();
 }
 
-// Auto login if password saved
 window.onload = function() {
   const saved = localStorage.getItem("urbnvybe_admin_pass");
   if (saved) {
@@ -193,10 +226,24 @@ window.onload = function() {
   }
 };
 
-document.getElementById("passwordInput").addEventListener("keypress", function(e) {
+document.getElementById("passwordInput").addEventListener("keypress", e => {
   if (e.key === "Enter") login();
 });
 
+/* ==================== TABS ==================== */
+function switchTab(tab) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add("active");
+
+  document.getElementById("tab-orders").style.display = tab === "orders" ? "block" : "none";
+  document.getElementById("tab-products").style.display = tab === "products" ? "block" : "none";
+  document.getElementById("tab-customers").style.display = tab === "customers" ? "block" : "none";
+
+  if (tab === "products" && allProducts.length === 0) loadProducts();
+  if (tab === "customers" && allCustomers.length === 0) loadCustomers();
+}
+
+/* ==================== ORDERS ==================== */
 async function loadOrders() {
   const box = document.getElementById("ordersTable");
   box.innerHTML = '<div class="loading">Loading orders...</div>';
@@ -204,208 +251,160 @@ async function loadOrders() {
   try {
     const res = await fetch(API_URL + "?action=admin_orders&password=" + encodeURIComponent(adminPassword));
     const data = await res.json();
-
     if (!data.success) {
-      box.innerHTML = '<div class="empty">Error: ' + (data.error || "Failed to load") + '</div>';
+      box.innerHTML = `<div class="empty">${data.error || "Failed"}</div>`;
       return false;
     }
-
     allOrders = data.orders || [];
-    document.getElementById("orderCountLabel").textContent = allOrders.length + " orders";
-    renderStats();
+    document.getElementById("headerInfo").textContent = allOrders.length + " orders";
+    renderOrderStats();
     filterOrders();
     return true;
-  } catch (err) {
-    box.innerHTML = '<div class="empty">Network error. Please try again.</div>';
+  } catch (e) {
+    box.innerHTML = '<div class="empty">Network error</div>';
     return false;
   }
 }
 
-function renderStats() {
+function renderOrderStats() {
   const total = allOrders.length;
-  const pending = allOrders.filter(o => (o.OrderStatus || "").toLowerCase() === "new").length;
-  const shipped = allOrders.filter(o => (o.OrderStatus || "").toLowerCase() === "shipped").length;
-  const delivered = allOrders.filter(o => (o.OrderStatus || "").toLowerCase() === "delivered").length;
+  const neu = allOrders.filter(o => (o.OrderStatus||"").toLowerCase()==="new").length;
+  const shipped = allOrders.filter(o => (o.OrderStatus||"").toLowerCase()==="shipped").length;
+  const delivered = allOrders.filter(o => (o.OrderStatus||"").toLowerCase()==="delivered").length;
 
-  document.getElementById("stats").innerHTML = `
+  document.getElementById("orderStats").innerHTML = `
     <div class="stat-card"><div class="num">${total}</div><div class="label">Total Orders</div></div>
-    <div class="stat-card"><div class="num">${pending}</div><div class="label">New / Pending</div></div>
+    <div class="stat-card"><div class="num">${neu}</div><div class="label">New</div></div>
     <div class="stat-card"><div class="num">${shipped}</div><div class="label">Shipped</div></div>
     <div class="stat-card"><div class="num">${delivered}</div><div class="label">Delivered</div></div>
   `;
 }
 
 function filterOrders() {
-  const search = document.getElementById("searchInput").value.toLowerCase().trim();
-  const status = document.getElementById("statusFilter").value;
-  const payment = document.getElementById("paymentFilter").value;
+  const q = document.getElementById("orderSearch").value.toLowerCase();
+  const st = document.getElementById("orderStatusFilter").value;
+  const pay = document.getElementById("paymentFilter").value;
 
-  let filtered = allOrders.filter(o => {
-    const matchSearch = !search ||
-      String(o.OrderID || "").toLowerCase().includes(search) ||
-      String(o.CustomerName || "").toLowerCase().includes(search) ||
-      String(o.Phone || o.Mobile || "").toLowerCase().includes(search);
-
-    const matchStatus = !status || String(o.OrderStatus || "") === status;
-    const matchPayment = !payment || String(o.PaymentStatus || "") === payment;
-
-    return matchSearch && matchStatus && matchPayment;
+  const filtered = allOrders.filter(o => {
+    const matchQ = !q || 
+      String(o.OrderID||"").toLowerCase().includes(q) ||
+      String(o.CustomerName||"").toLowerCase().includes(q) ||
+      String(o.Phone||o.Mobile||"").toLowerCase().includes(q);
+    const matchSt = !st || o.OrderStatus === st;
+    const matchPay = !pay || o.PaymentStatus === pay;
+    return matchQ && matchSt && matchPay;
   });
-
-  renderTable(filtered);
+  renderOrdersTable(filtered);
 }
 
-function renderTable(orders) {
+function renderOrdersTable(list) {
   const box = document.getElementById("ordersTable");
-
-  if (!orders.length) {
+  if (!list.length) {
     box.innerHTML = '<div class="empty">No orders found</div>';
     return;
   }
 
-  let html = `
-    <table>
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Date</th>
-          <th>Customer</th>
-          <th>Phone</th>
-          <th>Total</th>
-          <th>Payment</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
+  let html = `<table><thead><tr>
+    <th>Order ID</th><th>Date</th><th>Customer</th><th>Phone</th><th>Total</th><th>Payment</th><th>Status</th>
+  </tr></thead><tbody>`;
 
-  orders.forEach(o => {
+  list.forEach(o => {
     const date = o.OrderDate ? new Date(o.OrderDate).toLocaleDateString("en-IN") : "-";
-    const total = Number(o.Total || 0).toLocaleString("en-IN");
-    const statusClass = "badge-" + String(o.OrderStatus || "new").toLowerCase();
-    const payClass = "badge-" + String(o.PaymentStatus || "pending").toLowerCase();
-
-    html += `
-      <tr onclick="openOrder('${o.OrderID}')">
-        <td><strong>${escapeHTML(o.OrderID)}</strong></td>
-        <td>${date}</td>
-        <td>${escapeHTML(o.CustomerName || "-")}</td>
-        <td>${escapeHTML(o.Phone || o.Mobile || "-")}</td>
-        <td>₹${total}</td>
-        <td><span class="badge ${payClass}">${escapeHTML(o.PaymentStatus || "Pending")}</span></td>
-        <td><span class="badge ${statusClass}">${escapeHTML(o.OrderStatus || "New")}</span></td>
-      </tr>
-    `;
+    const total = Number(o.Total||0).toLocaleString("en-IN");
+    html += `<tr class="clickable" onclick="openOrder('${o.OrderID}')">
+      <td><strong>${esc(o.OrderID)}</strong></td>
+      <td>${date}</td>
+      <td>${esc(o.CustomerName)}</td>
+      <td>${esc(o.Phone||o.Mobile)}</td>
+      <td>₹${total}</td>
+      <td><span class="badge badge-${(o.PaymentStatus||"pending").toLowerCase()}">${esc(o.PaymentStatus||"Pending")}</span></td>
+      <td><span class="badge badge-${(o.OrderStatus||"new").toLowerCase()}">${esc(o.OrderStatus||"New")}</span></td>
+    </tr>`;
   });
-
   html += `</tbody></table>`;
   box.innerHTML = html;
 }
 
-async function openOrder(orderId) {
-  currentOrderId = orderId;
-  const modal = document.getElementById("modal");
-  const content = document.getElementById("modalContent");
-  document.getElementById("modalTitle").textContent = "Order " + orderId;
-  content.innerHTML = '<div class="loading">Loading details...</div>';
+async function openOrder(id) {
+  currentOrderId = id;
+  const modal = document.getElementById("orderModal");
+  const content = document.getElementById("orderModalContent");
+  document.getElementById("orderModalTitle").textContent = "Order " + id;
+  content.innerHTML = '<div class="loading">Loading...</div>';
   modal.style.display = "flex";
 
   try {
-    const res = await fetch(API_URL + "?action=admin_order_details&password=" + encodeURIComponent(adminPassword) + "&orderId=" + encodeURIComponent(orderId));
+    const res = await fetch(API_URL + "?action=admin_order_details&password=" + encodeURIComponent(adminPassword) + "&orderId=" + encodeURIComponent(id));
     const data = await res.json();
-
     if (!data.success) {
-      content.innerHTML = '<div class="empty">' + (data.error || "Failed to load") + '</div>';
+      content.innerHTML = `<div class="empty">${data.error}</div>`;
       return;
     }
 
     const o = data.order;
     const items = data.items || [];
 
-    let itemsHtml = "";
-    items.forEach(item => {
-      itemsHtml += `
-        <div class="item-row">
-          <div>
-            <strong>${escapeHTML(item.ProductName || item.productName || "-")}</strong><br>
-            <small>${escapeHTML(item.Size || "")} | ${escapeHTML(item.Color || item.ColorCode || "")} | SKU: ${escapeHTML(item.SKU || "")}</small>
-          </div>
-          <div style="text-align:right">
-            Qty: ${item.Quantity || item.quantity || 1}<br>
-            ₹${Number(item.Total || item.LineTotal || item.Price || 0).toLocaleString("en-IN")}
-          </div>
+    let itemsHtml = items.map(it => `
+      <div class="item-row">
+        <div>
+          <strong>${esc(it.ProductName||it.productName)}</strong><br>
+          <small>${esc(it.Size)} | ${esc(it.Color||it.ColorCode)} | ${esc(it.SKU)}</small>
         </div>
-      `;
-    });
+        <div style="text-align:right">
+          Qty: ${it.Quantity||it.quantity||1}<br>
+          ₹${Number(it.Total||it.LineTotal||it.Price||0).toLocaleString("en-IN")}
+        </div>
+      </div>
+    `).join("") || "<p>No items</p>";
 
     content.innerHTML = `
       <div class="modal-section">
         <h3>Customer</h3>
         <div class="info-grid">
-          <div><strong>Name</strong>${escapeHTML(o.CustomerName || "-")}</div>
-          <div><strong>Phone</strong>${escapeHTML(o.Phone || o.Mobile || "-")}</div>
-          <div><strong>Email</strong>${escapeHTML(o.Email || "-")}</div>
-          <div><strong>City</strong>${escapeHTML(o.City || "-")}</div>
+          <div><strong>Name</strong>${esc(o.CustomerName)}</div>
+          <div><strong>Phone</strong>${esc(o.Phone||o.Mobile)}</div>
+          <div><strong>Email</strong>${esc(o.Email)}</div>
+          <div><strong>City</strong>${esc(o.City)}</div>
         </div>
         <div style="margin-top:10px;background:#f9f9f9;padding:10px;border-radius:5px;font-size:14px">
-          <strong style="font-size:11px;color:#888">Address</strong><br>
-          ${escapeHTML(o.Address || "-")}, ${escapeHTML(o.City || "")}, ${escapeHTML(o.State || "")} - ${escapeHTML(o.Pincode || o.PINCode || "")}
+          ${esc(o.Address)}, ${esc(o.City)}, ${esc(o.State)} - ${esc(o.Pincode||o.PINCode)}
         </div>
       </div>
 
-      <div class="modal-section">
-        <h3>Items</h3>
-        ${itemsHtml || "<p>No items found</p>"}
-      </div>
+      <div class="modal-section"><h3>Items</h3>${itemsHtml}</div>
 
       <div class="modal-section">
         <h3>Update Order</h3>
-        <div class="form-row">
-          <label>Order Status</label>
-          <select id="editOrderStatus">
-            <option value="New">New</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Processing">Processing</option>
-            <option value="Shipped">Shipped</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Order Status</label>
+            <select id="editOrderStatus">
+              <option>New</option><option>Confirmed</option><option>Processing</option>
+              <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Payment Status</label>
+            <select id="editPaymentStatus">
+              <option>Pending</option><option>Paid</option><option>Failed</option><option>Refunded</option>
+            </select>
+          </div>
         </div>
-        <div class="form-row">
-          <label>Payment Status</label>
-          <select id="editPaymentStatus">
-            <option value="Pending">Pending</option>
-            <option value="Paid">Paid</option>
-            <option value="Failed">Failed</option>
-            <option value="Refunded">Refunded</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Tracking Number</label>
-          <input type="text" id="editTrackingNumber" value="${escapeHTML(o.TrackingNumber || "")}">
-        </div>
-        <div class="form-row">
-          <label>Tracking URL</label>
-          <input type="text" id="editTrackingURL" value="${escapeHTML(o.TrackingURL || "")}">
-        </div>
-        <div class="form-row">
-          <label>Admin Notes</label>
-          <textarea id="editNotes">${escapeHTML(o.Notes || "")}</textarea>
-        </div>
+        <div class="form-row"><label>Tracking Number</label><input id="editTrackingNumber" value="${esc(o.TrackingNumber)}"></div>
+        <div class="form-row"><label>Tracking URL</label><input id="editTrackingURL" value="${esc(o.TrackingURL)}"></div>
+        <div class="form-row"><label>Admin Notes</label><textarea id="editNotes">${esc(o.Notes)}</textarea></div>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-primary" onclick="saveOrder()">Save Changes</button>
-        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+        <button class="btn btn-dark" onclick="saveOrder()">Save Changes</button>
+        <button class="btn btn-light" onclick="closeOrderModal()">Close</button>
       </div>
     `;
 
-    // Set current values
     document.getElementById("editOrderStatus").value = o.OrderStatus || "New";
     document.getElementById("editPaymentStatus").value = o.PaymentStatus || "Pending";
-
-  } catch (err) {
-    content.innerHTML = '<div class="empty">Failed to load order details</div>';
+  } catch(e) {
+    content.innerHTML = '<div class="empty">Failed to load</div>';
   }
 }
 
@@ -424,35 +423,254 @@ async function saveOrder() {
   try {
     const res = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      headers: {"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-
-    if (!data.success) {
-      alert(data.error || "Update failed");
-      return;
-    }
-
-    alert("Order updated successfully!");
-    closeModal();
+    if (!data.success) return alert(data.error || "Failed");
+    alert("Order updated!");
+    closeOrderModal();
     loadOrders();
-  } catch (err) {
-    alert("Network error. Please try again.");
+  } catch(e) {
+    alert("Network error");
   }
 }
 
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
-  currentOrderId = null;
+function closeOrderModal() {
+  document.getElementById("orderModal").style.display = "none";
 }
 
-function escapeHTML(str) {
-  return String(str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+/* ==================== PRODUCTS ==================== */
+async function loadProducts() {
+  const box = document.getElementById("productsTable");
+  box.innerHTML = '<div class="loading">Loading products...</div>';
+
+  try {
+    const res = await fetch(API_URL + "?action=admin_products&password=" + encodeURIComponent(adminPassword));
+    const data = await res.json();
+    if (!data.success) {
+      box.innerHTML = `<div class="empty">${data.error}</div>`;
+      return;
+    }
+    allProducts = data.products || [];
+    filterProducts();
+  } catch(e) {
+    box.innerHTML = '<div class="empty">Network error</div>';
+  }
+}
+
+function filterProducts() {
+  const q = document.getElementById("productSearch").value.toLowerCase();
+  const filtered = allProducts.filter(p => 
+    !q || 
+    String(p.ProductName||"").toLowerCase().includes(q) ||
+    String(p.ProductID||"").toLowerCase().includes(q) ||
+    String(p.Category||"").toLowerCase().includes(q)
+  );
+  renderProductsTable(filtered);
+}
+
+function renderProductsTable(list) {
+  const box = document.getElementById("productsTable");
+  if (!list.length) {
+    box.innerHTML = '<div class="empty">No products found</div>';
+    return;
+  }
+
+  let html = `<table><thead><tr>
+    <th>Image</th><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th>Variants</th><th>Action</th>
+  </tr></thead><tbody>`;
+
+  list.forEach(p => {
+    const img = p.MainImage ? `<img src="${esc(p.MainImage)}" style="width:45px;height:45px;object-fit:cover;border-radius:4px">` : "—";
+    const statusClass = (p.Status||"").toLowerCase() === "active" ? "active" : "inactive";
+    html += `<tr>
+      <td>${img}</td>
+      <td>${esc(p.ProductID)}</td>
+      <td><strong>${esc(p.ProductName)}</strong></td>
+      <td>${esc(p.Category)}</td>
+      <td>₹${Number(p.Price||0).toLocaleString("en-IN")}</td>
+      <td><span class="badge badge-${statusClass}">${esc(p.Status||"Active")}</span></td>
+      <td>${(p.variants||[]).length}</td>
+      <td><button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="openProductModal('${p.ProductID}')">Edit</button></td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  box.innerHTML = html;
+}
+
+function openProductModal(productId = null) {
+  editingProductId = productId;
+  const modal = document.getElementById("productModal");
+  const content = document.getElementById("productModalContent");
+  const title = document.getElementById("productModalTitle");
+
+  let p = {};
+  if (productId) {
+    p = allProducts.find(x => String(x.ProductID) === String(productId)) || {};
+    title.textContent = "Edit Product — " + productId;
+  } else {
+    title.textContent = "Add New Product";
+  }
+
+  content.innerHTML = `
+    <div class="form-grid">
+      <div class="form-row"><label>Product Name *</label><input id="pName" value="${esc(p.ProductName)}"></div>
+      <div class="form-row"><label>Category</label><input id="pCategory" value="${esc(p.Category)}"></div>
+    </div>
+    <div class="form-row"><label>Description</label><textarea id="pDesc">${esc(p.Description)}</textarea></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Price *</label><input type="number" id="pPrice" value="${p.Price||""}"></div>
+      <div class="form-row"><label>Compare Price</label><input type="number" id="pCompare" value="${p.ComparePrice||""}"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Brand</label><input id="pBrand" value="${esc(p.Brand)}"></div>
+      <div class="form-row"><label>Material</label><input id="pMaterial" value="${esc(p.Material)}"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Gender</label>
+        <select id="pGender">
+          <option value="">—</option>
+          <option value="Men">Men</option>
+          <option value="Women">Women</option>
+          <option value="Unisex">Unisex</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Status</label>
+        <select id="pStatus">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row"><label>Main Image URL</label><input id="pMainImage" value="${esc(p.MainImage)}"></div>
+    <div class="form-row"><label>Back Image URL</label><input id="pBackImage" value="${esc(p.BackImage)}"></div>
+    <div class="form-row"><label>Tags (comma separated)</label><input id="pTags" value="${esc(p.Tags)}"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-dark" onclick="saveProduct()">${productId ? "Update Product" : "Add Product"}</button>
+      <button class="btn btn-light" onclick="closeProductModal()">Cancel</button>
+    </div>
+  `;
+
+  if (p.Gender) document.getElementById("pGender").value = p.Gender;
+  if (p.Status) document.getElementById("pStatus").value = p.Status;
+
+  modal.style.display = "flex";
+}
+
+async function saveProduct() {
+  const name = document.getElementById("pName").value.trim();
+  const price = document.getElementById("pPrice").value;
+
+  if (!name || !price) {
+    alert("Product Name and Price are required");
+    return;
+  }
+
+  const payload = {
+    action: "admin_save_product",
+    password: adminPassword,
+    ProductID: editingProductId || "",
+    ProductName: name,
+    Category: document.getElementById("pCategory").value.trim(),
+    Description: document.getElementById("pDesc").value.trim(),
+    Price: Number(price),
+    ComparePrice: Number(document.getElementById("pCompare").value) || "",
+    Brand: document.getElementById("pBrand").value.trim(),
+    Material: document.getElementById("pMaterial").value.trim(),
+    Gender: document.getElementById("pGender").value,
+    Status: document.getElementById("pStatus").value,
+    MainImage: document.getElementById("pMainImage").value.trim(),
+    BackImage: document.getElementById("pBackImage").value.trim(),
+    Tags: document.getElementById("pTags").value.trim()
+  };
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) return alert(data.error || "Failed");
+    alert(data.message || "Saved!");
+    closeProductModal();
+    loadProducts();
+  } catch(e) {
+    alert("Network error");
+  }
+}
+
+function closeProductModal() {
+  document.getElementById("productModal").style.display = "none";
+  editingProductId = null;
+}
+
+/* ==================== CUSTOMERS ==================== */
+async function loadCustomers() {
+  const box = document.getElementById("customersTable");
+  box.innerHTML = '<div class="loading">Loading customers...</div>';
+
+  try {
+    const res = await fetch(API_URL + "?action=admin_customers&password=" + encodeURIComponent(adminPassword));
+    const data = await res.json();
+    if (!data.success) {
+      box.innerHTML = `<div class="empty">${data.error}</div>`;
+      return;
+    }
+    allCustomers = data.customers || [];
+    filterCustomers();
+  } catch(e) {
+    box.innerHTML = '<div class="empty">Network error</div>';
+  }
+}
+
+function filterCustomers() {
+  const q = document.getElementById("customerSearch").value.toLowerCase();
+  const filtered = allCustomers.filter(c =>
+    !q ||
+    String(c.Name||"").toLowerCase().includes(q) ||
+    String(c.Phone||"").toLowerCase().includes(q) ||
+    String(c.Email||"").toLowerCase().includes(q)
+  );
+  renderCustomersTable(filtered);
+}
+
+function renderCustomersTable(list) {
+  const box = document.getElementById("customersTable");
+  if (!list.length) {
+    box.innerHTML = '<div class="empty">No customers found</div>';
+    return;
+  }
+
+  let html = `<table><thead><tr>
+    <th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Orders</th><th>Total Spent</th><th>Last Order</th>
+  </tr></thead><tbody>`;
+
+  list.forEach(c => {
+    const last = c.LastOrderDate ? new Date(c.LastOrderDate).toLocaleDateString("en-IN") : "—";
+    html += `<tr>
+      <td><strong>${esc(c.Name)}</strong></td>
+      <td>${esc(c.Phone)}</td>
+      <td>${esc(c.Email)}</td>
+      <td>${esc(c.City)}</td>
+      <td>${c.TotalOrders}</td>
+      <td>₹${Number(c.TotalSpent||0).toLocaleString("en-IN")}</td>
+      <td>${last}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  box.innerHTML = html;
+}
+
+/* ==================== HELPERS ==================== */
+function esc(str) {
+  return String(str ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
 }
 </script>
 </body>
