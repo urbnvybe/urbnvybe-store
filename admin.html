@@ -23,7 +23,7 @@ header{background:#111;color:#fff;padding:0 20px;height:60px;display:flex;align-
 .container{max-width:1300px;margin:0 auto;padding:20px}
 
 .tabs{display:flex;gap:8px;margin-bottom:25px;flex-wrap:wrap}
-.tab{padding:11px 20px;background:#fff;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px}
+.tab{padding:11px 18px;background:#fff;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px}
 .tab.active{background:#111;color:#fff;border-color:#111}
 
 .toolbar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;align-items:center}
@@ -51,6 +51,7 @@ tr:hover{background:#fafafa}
 .badge-shipped{background:#f3e5f5;color:#7b1fa2}
 .badge-delivered{background:#e0f2f1;color:#00695c}
 .badge-cancelled,.badge-inactive{background:#ffebee;color:#c62828}
+.badge-bogo{background:#e3f2fd;color:#1565c0}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:200;padding:15px}
 .modal{background:#fff;width:100%;max-width:780px;max-height:92vh;overflow-y:auto;border-radius:10px;padding:28px}
@@ -110,6 +111,7 @@ tr:hover{background:#fafafa}
       <div class="tab active" data-tab="orders" onclick="switchTab('orders')">Orders</div>
       <div class="tab" data-tab="products" onclick="switchTab('products')">Products</div>
       <div class="tab" data-tab="customers" onclick="switchTab('customers')">Customers</div>
+      <div class="tab" data-tab="coupons" onclick="switchTab('coupons')">Coupons</div>
     </div>
 
     <!-- ORDERS -->
@@ -151,6 +153,16 @@ tr:hover{background:#fafafa}
       </div>
       <div class="table-wrap"><div id="customersTable"><div class="loading">Loading...</div></div></div>
     </div>
+
+    <!-- COUPONS -->
+    <div id="tab-coupons" style="display:none">
+      <div class="toolbar">
+        <input class="search-box" id="couponSearch" placeholder="Search coupon code..." oninput="filterCoupons()">
+        <button class="btn btn-success" onclick="openCouponModal()">+ Add Coupon</button>
+        <button class="btn btn-primary" onclick="loadCoupons()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap"><div id="couponsTable"><div class="loading">Loading...</div></div></div>
+    </div>
   </div>
 </div>
 
@@ -181,16 +193,21 @@ tr:hover{background:#fafafa}
   </div>
 </div>
 
+<!-- COUPON MODAL -->
+<div class="modal-overlay" id="couponModal">
+  <div class="modal">
+    <button class="close-btn" onclick="closeCouponModal()">×</button>
+    <h2 id="couponModalTitle">Add Coupon</h2>
+    <div id="couponModalContent"></div>
+  </div>
+</div>
+
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyo1cxZFeA3uN13nY02kPUITiatINQOJ8KbzGecmVWxXKbhG3cSVfE9OZNTE_C_SyITuQ/exec";
 
 let adminPassword = "";
-let allOrders = [];
-let allProducts = [];
-let allCustomers = [];
-let currentOrderId = null;
-let editingProductId = null;
-let currentVariantProductId = null;
+let allOrders = [], allProducts = [], allCustomers = [], allCoupons = [];
+let currentOrderId = null, editingProductId = null, currentVariantProductId = null, editingCouponId = null;
 
 function login() {
   const pass = document.getElementById("passwordInput").value.trim();
@@ -208,30 +225,19 @@ function login() {
     }
   });
 }
-
-function logout() {
-  adminPassword = "";
-  localStorage.removeItem("urbnvybe_admin_pass");
-  location.reload();
-}
-
-window.onload = function() {
-  const saved = localStorage.getItem("urbnvybe_admin_pass");
-  if (saved) {
-    document.getElementById("passwordInput").value = saved;
-    login();
-  }
-};
-document.getElementById("passwordInput").addEventListener("keypress", e => { if (e.key === "Enter") login(); });
+function logout(){ adminPassword=""; localStorage.removeItem("urbnvybe_admin_pass"); location.reload(); }
+window.onload = function(){ const s=localStorage.getItem("urbnvybe_admin_pass"); if(s){ document.getElementById("passwordInput").value=s; login(); } };
+document.getElementById("passwordInput").addEventListener("keypress", e => { if(e.key==="Enter") login(); });
 
 function switchTab(tab) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.querySelector(`.tab[data-tab="${tab}"]`).classList.add("active");
-  document.getElementById("tab-orders").style.display = tab === "orders" ? "block" : "none";
-  document.getElementById("tab-products").style.display = tab === "products" ? "block" : "none";
-  document.getElementById("tab-customers").style.display = tab === "customers" ? "block" : "none";
-  if (tab === "products" && allProducts.length === 0) loadProducts();
-  if (tab === "customers" && allCustomers.length === 0) loadCustomers();
+  ["orders","products","customers","coupons"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = t===tab ? "block" : "none";
+  });
+  if(tab==="products" && !allProducts.length) loadProducts();
+  if(tab==="customers" && !allCustomers.length) loadCustomers();
+  if(tab==="coupons" && !allCoupons.length) loadCoupons();
 }
 
 /* ==================== ORDERS ==================== */
@@ -239,84 +245,70 @@ async function loadOrders() {
   const box = document.getElementById("ordersTable");
   box.innerHTML = '<div class="loading">Loading orders...</div>';
   try {
-    const res = await fetch(API_URL + "?action=admin_orders&password=" + encodeURIComponent(adminPassword));
+    const res = await fetch(API_URL+"?action=admin_orders&password="+encodeURIComponent(adminPassword));
     const data = await res.json();
-    if (!data.success) { box.innerHTML = `<div class="empty">${data.error||"Failed"}</div>`; return false; }
-    allOrders = data.orders || [];
-    document.getElementById("headerInfo").textContent = allOrders.length + " orders";
-    renderOrderStats();
-    filterOrders();
-    return true;
-  } catch(e) { box.innerHTML = '<div class="empty">Network error</div>'; return false; }
+    if(!data.success){ box.innerHTML=`<div class="empty">${data.error||"Failed"}</div>`; return false; }
+    allOrders = data.orders||[];
+    document.getElementById("headerInfo").textContent = allOrders.length+" orders";
+    renderOrderStats(); filterOrders(); return true;
+  } catch(e){ box.innerHTML='<div class="empty">Network error</div>'; return false; }
 }
-
-function renderOrderStats() {
-  const total = allOrders.length;
-  const neu = allOrders.filter(o => (o.OrderStatus||"").toLowerCase()==="new").length;
-  const shipped = allOrders.filter(o => (o.OrderStatus||"").toLowerCase()==="shipped").length;
-  const delivered = allOrders.filter(o => (o.OrderStatus||"").toLowerCase()==="delivered").length;
-  document.getElementById("orderStats").innerHTML = `
+function renderOrderStats(){
+  const total=allOrders.length;
+  const neu=allOrders.filter(o=>(o.OrderStatus||"").toLowerCase()==="new").length;
+  const shipped=allOrders.filter(o=>(o.OrderStatus||"").toLowerCase()==="shipped").length;
+  const delivered=allOrders.filter(o=>(o.OrderStatus||"").toLowerCase()==="delivered").length;
+  document.getElementById("orderStats").innerHTML=`
     <div class="stat-card"><div class="num">${total}</div><div class="label">Total Orders</div></div>
     <div class="stat-card"><div class="num">${neu}</div><div class="label">New</div></div>
     <div class="stat-card"><div class="num">${shipped}</div><div class="label">Shipped</div></div>
     <div class="stat-card"><div class="num">${delivered}</div><div class="label">Delivered</div></div>`;
 }
-
-function filterOrders() {
-  const q = document.getElementById("orderSearch").value.toLowerCase();
-  const st = document.getElementById("orderStatusFilter").value;
-  const pay = document.getElementById("paymentFilter").value;
-  const filtered = allOrders.filter(o => {
-    const matchQ = !q || String(o.OrderID||"").toLowerCase().includes(q) || String(o.CustomerName||"").toLowerCase().includes(q) || String(o.Phone||o.Mobile||"").toLowerCase().includes(q);
-    return matchQ && (!st || o.OrderStatus===st) && (!pay || o.PaymentStatus===pay);
+function filterOrders(){
+  const q=document.getElementById("orderSearch").value.toLowerCase();
+  const st=document.getElementById("orderStatusFilter").value;
+  const pay=document.getElementById("paymentFilter").value;
+  const filtered=allOrders.filter(o=>{
+    const matchQ=!q||String(o.OrderID||"").toLowerCase().includes(q)||String(o.CustomerName||"").toLowerCase().includes(q)||String(o.Phone||o.Mobile||"").toLowerCase().includes(q);
+    return matchQ&&(!st||o.OrderStatus===st)&&(!pay||o.PaymentStatus===pay);
   });
   renderOrdersTable(filtered);
 }
-
-function renderOrdersTable(list) {
-  const box = document.getElementById("ordersTable");
-  if (!list.length) { box.innerHTML = '<div class="empty">No orders found</div>'; return; }
-  let html = `<table><thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Phone</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>`;
-  list.forEach(o => {
-    const date = o.OrderDate ? new Date(o.OrderDate).toLocaleDateString("en-IN") : "-";
-    html += `<tr class="clickable" onclick="openOrder('${o.OrderID}')">
+function renderOrdersTable(list){
+  const box=document.getElementById("ordersTable");
+  if(!list.length){box.innerHTML='<div class="empty">No orders found</div>';return;}
+  let html=`<table><thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Phone</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>`;
+  list.forEach(o=>{
+    const date=o.OrderDate?new Date(o.OrderDate).toLocaleDateString("en-IN"):"-";
+    html+=`<tr class="clickable" onclick="openOrder('${o.OrderID}')">
       <td><strong>${esc(o.OrderID)}</strong></td><td>${date}</td><td>${esc(o.CustomerName)}</td>
       <td>${esc(o.Phone||o.Mobile)}</td><td>₹${Number(o.Total||0).toLocaleString("en-IN")}</td>
       <td><span class="badge badge-${(o.PaymentStatus||"pending").toLowerCase()}">${esc(o.PaymentStatus||"Pending")}</span></td>
       <td><span class="badge badge-${(o.OrderStatus||"new").toLowerCase()}">${esc(o.OrderStatus||"New")}</span></td></tr>`;
   });
-  box.innerHTML = html + `</tbody></table>`;
+  box.innerHTML=html+`</tbody></table>`;
 }
-
-async function openOrder(id) {
-  currentOrderId = id;
-  const modal = document.getElementById("orderModal");
-  const content = document.getElementById("orderModalContent");
-  document.getElementById("orderModalTitle").textContent = "Order " + id;
-  content.innerHTML = '<div class="loading">Loading...</div>';
-  modal.style.display = "flex";
-  try {
-    const res = await fetch(API_URL + "?action=admin_order_details&password=" + encodeURIComponent(adminPassword) + "&orderId=" + encodeURIComponent(id));
-    const data = await res.json();
-    if (!data.success) { content.innerHTML = `<div class="empty">${data.error}</div>`; return; }
-    const o = data.order;
-    const items = data.items || [];
-    let itemsHtml = items.map(it => `
-      <div class="item-row"><div><strong>${esc(it.ProductName||it.productName)}</strong><br>
-      <small>${esc(it.Size)} | ${esc(it.Color||it.ColorCode)} | ${esc(it.SKU)}</small></div>
-      <div style="text-align:right">Qty: ${it.Quantity||it.quantity||1}<br>₹${Number(it.Total||it.LineTotal||it.Price||0).toLocaleString("en-IN")}</div></div>`).join("") || "<p>No items</p>";
-
-    content.innerHTML = `
+async function openOrder(id){
+  currentOrderId=id;
+  const modal=document.getElementById("orderModal");
+  const content=document.getElementById("orderModalContent");
+  document.getElementById("orderModalTitle").textContent="Order "+id;
+  content.innerHTML='<div class="loading">Loading...</div>';
+  modal.style.display="flex";
+  try{
+    const res=await fetch(API_URL+"?action=admin_order_details&password="+encodeURIComponent(adminPassword)+"&orderId="+encodeURIComponent(id));
+    const data=await res.json();
+    if(!data.success){content.innerHTML=`<div class="empty">${data.error}</div>`;return;}
+    const o=data.order; const items=data.items||[];
+    let itemsHtml=items.map(it=>`<div class="item-row"><div><strong>${esc(it.ProductName||it.productName)}</strong><br><small>${esc(it.Size)} | ${esc(it.Color||it.ColorCode)} | ${esc(it.SKU)}</small></div>
+      <div style="text-align:right">Qty: ${it.Quantity||it.quantity||1}<br>₹${Number(it.Total||it.LineTotal||it.Price||0).toLocaleString("en-IN")}</div></div>`).join("")||"<p>No items</p>";
+    content.innerHTML=`
       <div class="modal-section"><h3>Customer</h3>
         <div class="info-grid">
-          <div><strong>Name</strong>${esc(o.CustomerName)}</div>
-          <div><strong>Phone</strong>${esc(o.Phone||o.Mobile)}</div>
-          <div><strong>Email</strong>${esc(o.Email)}</div>
-          <div><strong>City</strong>${esc(o.City)}</div>
+          <div><strong>Name</strong>${esc(o.CustomerName)}</div><div><strong>Phone</strong>${esc(o.Phone||o.Mobile)}</div>
+          <div><strong>Email</strong>${esc(o.Email)}</div><div><strong>City</strong>${esc(o.City)}</div>
         </div>
-        <div style="margin-top:10px;background:#f9f9f9;padding:10px;border-radius:5px;font-size:14px">
-          ${esc(o.Address)}, ${esc(o.City)}, ${esc(o.State)} - ${esc(o.Pincode||o.PINCode)}
-        </div>
+        <div style="margin-top:10px;background:#f9f9f9;padding:10px;border-radius:5px;font-size:14px">${esc(o.Address)}, ${esc(o.City)}, ${esc(o.State)} - ${esc(o.Pincode||o.PINCode)}</div>
       </div>
       <div class="modal-section"><h3>Items</h3>${itemsHtml}</div>
       <div class="modal-section"><h3>Update Order</h3>
@@ -336,56 +328,50 @@ async function openOrder(id) {
         <button class="btn btn-dark" onclick="saveOrder()">Save Changes</button>
         <button class="btn btn-light" onclick="closeOrderModal()">Close</button>
       </div>`;
-    document.getElementById("editOrderStatus").value = o.OrderStatus || "New";
-    document.getElementById("editPaymentStatus").value = o.PaymentStatus || "Pending";
-  } catch(e) { content.innerHTML = '<div class="empty">Failed to load</div>'; }
+    document.getElementById("editOrderStatus").value=o.OrderStatus||"New";
+    document.getElementById("editPaymentStatus").value=o.PaymentStatus||"Pending";
+  }catch(e){content.innerHTML='<div class="empty">Failed to load</div>';}
 }
-
-async function saveOrder() {
-  const payload = {
-    action: "admin_update_order", password: adminPassword, orderId: currentOrderId,
-    orderStatus: document.getElementById("editOrderStatus").value,
-    paymentStatus: document.getElementById("editPaymentStatus").value,
-    trackingNumber: document.getElementById("editTrackingNumber").value.trim(),
-    trackingURL: document.getElementById("editTrackingURL").value.trim(),
-    notes: document.getElementById("editNotes").value.trim()
-  };
-  try {
-    const res = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload) });
-    const data = await res.json();
-    if (!data.success) return alert(data.error||"Failed");
+async function saveOrder(){
+  const payload={action:"admin_update_order",password:adminPassword,orderId:currentOrderId,
+    orderStatus:document.getElementById("editOrderStatus").value,
+    paymentStatus:document.getElementById("editPaymentStatus").value,
+    trackingNumber:document.getElementById("editTrackingNumber").value.trim(),
+    trackingURL:document.getElementById("editTrackingURL").value.trim(),
+    notes:document.getElementById("editNotes").value.trim()};
+  try{
+    const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!data.success) return alert(data.error||"Failed");
     alert("Order updated!"); closeOrderModal(); loadOrders();
-  } catch(e) { alert("Network error"); }
+  }catch(e){alert("Network error");}
 }
-function closeOrderModal(){ document.getElementById("orderModal").style.display = "none"; }
+function closeOrderModal(){document.getElementById("orderModal").style.display="none";}
 
-/* ==================== PRODUCTS ==================== */
-async function loadProducts() {
-  const box = document.getElementById("productsTable");
-  box.innerHTML = '<div class="loading">Loading products...</div>';
-  try {
-    const res = await fetch(API_URL + "?action=admin_products&password=" + encodeURIComponent(adminPassword));
-    const data = await res.json();
-    if (!data.success) { box.innerHTML = `<div class="empty">${data.error}</div>`; return; }
-    allProducts = data.products || [];
-    filterProducts();
-  } catch(e) { box.innerHTML = '<div class="empty">Network error</div>'; }
+/* ==================== PRODUCTS + VARIANTS ==================== */
+async function loadProducts(){
+  const box=document.getElementById("productsTable");
+  box.innerHTML='<div class="loading">Loading products...</div>';
+  try{
+    const res=await fetch(API_URL+"?action=admin_products&password="+encodeURIComponent(adminPassword));
+    const data=await res.json();
+    if(!data.success){box.innerHTML=`<div class="empty">${data.error}</div>`;return;}
+    allProducts=data.products||[]; filterProducts();
+  }catch(e){box.innerHTML='<div class="empty">Network error</div>';}
 }
-
-function filterProducts() {
-  const q = document.getElementById("productSearch").value.toLowerCase();
-  const filtered = allProducts.filter(p => !q || String(p.ProductName||"").toLowerCase().includes(q) || String(p.ProductID||"").toLowerCase().includes(q) || String(p.Category||"").toLowerCase().includes(q));
+function filterProducts(){
+  const q=document.getElementById("productSearch").value.toLowerCase();
+  const filtered=allProducts.filter(p=>!q||String(p.ProductName||"").toLowerCase().includes(q)||String(p.ProductID||"").toLowerCase().includes(q)||String(p.Category||"").toLowerCase().includes(q));
   renderProductsTable(filtered);
 }
-
-function renderProductsTable(list) {
-  const box = document.getElementById("productsTable");
-  if (!list.length) { box.innerHTML = '<div class="empty">No products found</div>'; return; }
-  let html = `<table><thead><tr><th>Image</th><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th>Variants</th><th>Actions</th></tr></thead><tbody>`;
-  list.forEach(p => {
-    const img = p.MainImage ? `<img src="${esc(p.MainImage)}" style="width:45px;height:45px;object-fit:cover;border-radius:4px">` : "—";
-    const statusClass = (p.Status||"").toLowerCase()==="active" ? "active" : "inactive";
-    html += `<tr>
+function renderProductsTable(list){
+  const box=document.getElementById("productsTable");
+  if(!list.length){box.innerHTML='<div class="empty">No products found</div>';return;}
+  let html=`<table><thead><tr><th>Image</th><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th>Variants</th><th>Actions</th></tr></thead><tbody>`;
+  list.forEach(p=>{
+    const img=p.MainImage?`<img src="${esc(p.MainImage)}" style="width:45px;height:45px;object-fit:cover;border-radius:4px">`:"—";
+    const statusClass=(p.Status||"").toLowerCase()==="active"?"active":"inactive";
+    html+=`<tr>
       <td>${img}</td><td>${esc(p.ProductID)}</td><td><strong>${esc(p.ProductName)}</strong></td>
       <td>${esc(p.Category)}</td><td>₹${Number(p.Price||0).toLocaleString("en-IN")}</td>
       <td><span class="badge badge-${statusClass}">${esc(p.Status||"Active")}</span></td>
@@ -395,18 +381,16 @@ function renderProductsTable(list) {
         <button class="btn btn-success btn-sm" onclick="openVariantsModal('${p.ProductID}')">Variants</button>
       </td></tr>`;
   });
-  box.innerHTML = html + `</tbody></table>`;
+  box.innerHTML=html+`</tbody></table>`;
 }
-
-function openProductModal(productId = null) {
-  editingProductId = productId;
-  const modal = document.getElementById("productModal");
-  const content = document.getElementById("productModalContent");
-  const title = document.getElementById("productModalTitle");
-  let p = productId ? (allProducts.find(x => String(x.ProductID)===String(productId)) || {}) : {};
-  title.textContent = productId ? "Edit Product — " + productId : "Add New Product";
-
-  content.innerHTML = `
+function openProductModal(productId=null){
+  editingProductId=productId;
+  const modal=document.getElementById("productModal");
+  const content=document.getElementById("productModalContent");
+  const title=document.getElementById("productModalTitle");
+  let p=productId?(allProducts.find(x=>String(x.ProductID)===String(productId))||{}):{};
+  title.textContent=productId?"Edit Product — "+productId:"Add New Product";
+  content.innerHTML=`
     <div class="form-grid">
       <div class="form-row"><label>Product Name *</label><input id="pName" value="${esc(p.ProductName)}"></div>
       <div class="form-row"><label>Category</label><input id="pCategory" value="${esc(p.Category)}"></div>
@@ -421,198 +405,268 @@ function openProductModal(productId = null) {
       <div class="form-row"><label>Material</label><input id="pMaterial" value="${esc(p.Material)}"></div>
     </div>
     <div class="form-grid">
-      <div class="form-row"><label>Gender</label>
-        <select id="pGender"><option value="">—</option><option>Men</option><option>Women</option><option>Unisex</option></select>
-      </div>
-      <div class="form-row"><label>Status</label>
-        <select id="pStatus"><option>Active</option><option>Inactive</option></select>
-      </div>
+      <div class="form-row"><label>Gender</label><select id="pGender"><option value="">—</option><option>Men</option><option>Women</option><option>Unisex</option></select></div>
+      <div class="form-row"><label>Status</label><select id="pStatus"><option>Active</option><option>Inactive</option></select></div>
     </div>
     <div class="form-row"><label>Main Image URL</label><input id="pMainImage" value="${esc(p.MainImage)}"></div>
     <div class="form-row"><label>Back Image URL</label><input id="pBackImage" value="${esc(p.BackImage)}"></div>
     <div class="form-row"><label>Tags</label><input id="pTags" value="${esc(p.Tags)}"></div>
     <div class="modal-actions">
-      <button class="btn btn-dark" onclick="saveProduct()">${productId ? "Update Product" : "Add Product"}</button>
+      <button class="btn btn-dark" onclick="saveProduct()">${productId?"Update Product":"Add Product"}</button>
       <button class="btn btn-light" onclick="closeProductModal()">Cancel</button>
     </div>`;
-  if (p.Gender) document.getElementById("pGender").value = p.Gender;
-  if (p.Status) document.getElementById("pStatus").value = p.Status;
-  modal.style.display = "flex";
+  if(p.Gender) document.getElementById("pGender").value=p.Gender;
+  if(p.Status) document.getElementById("pStatus").value=p.Status;
+  modal.style.display="flex";
 }
-
-async function saveProduct() {
-  const name = document.getElementById("pName").value.trim();
-  const price = document.getElementById("pPrice").value;
-  if (!name || !price) return alert("Name and Price are required");
-
-  const payload = {
-    action: "admin_save_product", password: adminPassword,
-    ProductID: editingProductId || "",
-    ProductName: name,
-    Category: document.getElementById("pCategory").value.trim(),
-    Description: document.getElementById("pDesc").value.trim(),
-    Price: Number(price),
-    ComparePrice: Number(document.getElementById("pCompare").value) || "",
-    Brand: document.getElementById("pBrand").value.trim(),
-    Material: document.getElementById("pMaterial").value.trim(),
-    Gender: document.getElementById("pGender").value,
-    Status: document.getElementById("pStatus").value,
-    MainImage: document.getElementById("pMainImage").value.trim(),
-    BackImage: document.getElementById("pBackImage").value.trim(),
-    Tags: document.getElementById("pTags").value.trim()
-  };
-  try {
-    const res = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload) });
-    const data = await res.json();
-    if (!data.success) return alert(data.error||"Failed");
+async function saveProduct(){
+  const name=document.getElementById("pName").value.trim();
+  const price=document.getElementById("pPrice").value;
+  if(!name||!price) return alert("Name and Price are required");
+  const payload={action:"admin_save_product",password:adminPassword,ProductID:editingProductId||"",
+    ProductName:name,Category:document.getElementById("pCategory").value.trim(),
+    Description:document.getElementById("pDesc").value.trim(),Price:Number(price),
+    ComparePrice:Number(document.getElementById("pCompare").value)||"",
+    Brand:document.getElementById("pBrand").value.trim(),Material:document.getElementById("pMaterial").value.trim(),
+    Gender:document.getElementById("pGender").value,Status:document.getElementById("pStatus").value,
+    MainImage:document.getElementById("pMainImage").value.trim(),BackImage:document.getElementById("pBackImage").value.trim(),
+    Tags:document.getElementById("pTags").value.trim()};
+  try{
+    const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!data.success) return alert(data.error||"Failed");
     alert(data.message||"Saved!"); closeProductModal(); loadProducts();
-  } catch(e) { alert("Network error"); }
+  }catch(e){alert("Network error");}
 }
-function closeProductModal(){ document.getElementById("productModal").style.display = "none"; editingProductId = null; }
+function closeProductModal(){document.getElementById("productModal").style.display="none";editingProductId=null;}
 
-/* ==================== VARIANTS ==================== */
-async function openVariantsModal(productId) {
-  currentVariantProductId = productId;
-  const modal = document.getElementById("variantsModal");
-  const content = document.getElementById("variantsModalContent");
-  const product = allProducts.find(p => String(p.ProductID) === String(productId));
-  document.getElementById("variantsModalTitle").textContent = "Variants — " + (product ? product.ProductName : productId);
-  content.innerHTML = '<div class="loading">Loading variants...</div>';
-  modal.style.display = "flex";
-
-  try {
-    const res = await fetch(API_URL + "?action=admin_variants&password=" + encodeURIComponent(adminPassword) + "&productId=" + encodeURIComponent(productId));
-    const data = await res.json();
-    if (!data.success) { content.innerHTML = `<div class="empty">${data.error}</div>`; return; }
-
-    const variants = data.variants || [];
-    let rows = variants.map(v => `
+async function openVariantsModal(productId){
+  currentVariantProductId=productId;
+  const modal=document.getElementById("variantsModal");
+  const content=document.getElementById("variantsModalContent");
+  const product=allProducts.find(p=>String(p.ProductID)===String(productId));
+  document.getElementById("variantsModalTitle").textContent="Variants — "+(product?product.ProductName:productId);
+  content.innerHTML='<div class="loading">Loading variants...</div>';
+  modal.style.display="flex";
+  try{
+    const res=await fetch(API_URL+"?action=admin_variants&password="+encodeURIComponent(adminPassword)+"&productId="+encodeURIComponent(productId));
+    const data=await res.json();
+    if(!data.success){content.innerHTML=`<div class="empty">${data.error}</div>`;return;}
+    const variants=data.variants||[];
+    let rows=variants.map(v=>`
       <tr>
         <td>${esc(v.VariantID)}</td>
         <td><input id="size_${v.VariantID}" value="${esc(v.Size)}" style="width:70px"></td>
         <td><input id="stock_${v.VariantID}" type="number" value="${v.Stock||0}" style="width:70px"></td>
         <td><input id="price_${v.VariantID}" type="number" value="${v.Price||0}" style="width:80px"></td>
-        <td>
-          <select id="status_${v.VariantID}">
-            <option value="Active" ${v.Status==="Active"?"selected":""}>Active</option>
-            <option value="Inactive" ${v.Status==="Inactive"?"selected":""}>Inactive</option>
-          </select>
-        </td>
+        <td><select id="status_${v.VariantID}"><option value="Active" ${v.Status==="Active"?"selected":""}>Active</option><option value="Inactive" ${v.Status==="Inactive"?"selected":""}>Inactive</option></select></td>
         <td><button class="btn btn-primary btn-sm" onclick="updateVariant('${v.VariantID}')">Save</button></td>
       </tr>`).join("");
-
-    content.innerHTML = `
-      <table class="variant-table">
-        <thead><tr><th>ID</th><th>Size</th><th>Stock</th><th>Price</th><th>Status</th><th></th></tr></thead>
-        <tbody>${rows || "<tr><td colspan='6'>No variants yet</td></tr>"}</tbody>
-      </table>
-
-      <div class="modal-section" style="margin-top:25px">
-        <h3>Add New Size</h3>
+    content.innerHTML=`
+      <table class="variant-table"><thead><tr><th>ID</th><th>Size</th><th>Stock</th><th>Price</th><th>Status</th><th></th></tr></thead>
+      <tbody>${rows||"<tr><td colspan='6'>No variants yet</td></tr>"}</tbody></table>
+      <div class="modal-section" style="margin-top:25px"><h3>Add New Size</h3>
         <div class="form-grid">
           <div class="form-row"><label>Size *</label><input id="newSize" placeholder="S / M / L / XL / XXL"></div>
           <div class="form-row"><label>Stock *</label><input type="number" id="newStock" value="10"></div>
         </div>
         <div class="form-grid">
-          <div class="form-row"><label>Price</label><input type="number" id="newPrice" value="${product ? product.Price : 499}"></div>
+          <div class="form-row"><label>Price</label><input type="number" id="newPrice" value="${product?product.Price:499}"></div>
           <div class="form-row"><label>Color Code</label><input id="newColor" value="NAVY"></div>
         </div>
         <button class="btn btn-success" onclick="addVariant()">+ Add Variant</button>
       </div>
-      <div class="modal-actions">
-        <button class="btn btn-light" onclick="closeVariantsModal()">Close</button>
-      </div>`;
-  } catch(e) {
-    content.innerHTML = '<div class="empty">Failed to load variants</div>';
-  }
+      <div class="modal-actions"><button class="btn btn-light" onclick="closeVariantsModal()">Close</button></div>`;
+  }catch(e){content.innerHTML='<div class="empty">Failed to load variants</div>';}
 }
-
-async function updateVariant(variantId) {
-  const payload = {
-    action: "admin_save_variant",
-    password: adminPassword,
-    VariantID: variantId,
-    Size: document.getElementById("size_" + variantId).value.trim(),
-    Stock: Number(document.getElementById("stock_" + variantId).value),
-    Price: Number(document.getElementById("price_" + variantId).value),
-    Status: document.getElementById("status_" + variantId).value
-  };
-  try {
-    const res = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload) });
-    const data = await res.json();
-    if (!data.success) return alert(data.error||"Failed");
-    alert("Variant updated");
-    openVariantsModal(currentVariantProductId);
-    loadProducts();
-  } catch(e) { alert("Network error"); }
+async function updateVariant(variantId){
+  const payload={action:"admin_save_variant",password:adminPassword,VariantID:variantId,
+    Size:document.getElementById("size_"+variantId).value.trim(),
+    Stock:Number(document.getElementById("stock_"+variantId).value),
+    Price:Number(document.getElementById("price_"+variantId).value),
+    Status:document.getElementById("status_"+variantId).value};
+  try{
+    const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!data.success) return alert(data.error||"Failed");
+    alert("Variant updated"); openVariantsModal(currentVariantProductId); loadProducts();
+  }catch(e){alert("Network error");}
 }
-
-async function addVariant() {
-  const size = document.getElementById("newSize").value.trim();
-  const stock = document.getElementById("newStock").value;
-  if (!size || stock === "") return alert("Size and Stock are required");
-
-  const payload = {
-    action: "admin_save_variant",
-    password: adminPassword,
-    ProductID: currentVariantProductId,
-    Size: size,
-    Stock: Number(stock),
-    Price: Number(document.getElementById("newPrice").value) || 0,
-    ColorCode: document.getElementById("newColor").value.trim() || "NAVY",
-    Status: "Active"
-  };
-  try {
-    const res = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload) });
-    const data = await res.json();
-    if (!data.success) return alert(data.error||"Failed");
-    alert("Variant added!");
-    openVariantsModal(currentVariantProductId);
-    loadProducts();
-  } catch(e) { alert("Network error"); }
+async function addVariant(){
+  const size=document.getElementById("newSize").value.trim();
+  const stock=document.getElementById("newStock").value;
+  if(!size||stock==="") return alert("Size and Stock are required");
+  const payload={action:"admin_save_variant",password:adminPassword,ProductID:currentVariantProductId,
+    Size:size,Stock:Number(stock),Price:Number(document.getElementById("newPrice").value)||0,
+    ColorCode:document.getElementById("newColor").value.trim()||"NAVY",Status:"Active"};
+  try{
+    const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!data.success) return alert(data.error||"Failed");
+    alert("Variant added!"); openVariantsModal(currentVariantProductId); loadProducts();
+  }catch(e){alert("Network error");}
 }
-
-function closeVariantsModal() {
-  document.getElementById("variantsModal").style.display = "none";
-  currentVariantProductId = null;
-}
+function closeVariantsModal(){document.getElementById("variantsModal").style.display="none";currentVariantProductId=null;}
 
 /* ==================== CUSTOMERS ==================== */
-async function loadCustomers() {
-  const box = document.getElementById("customersTable");
-  box.innerHTML = '<div class="loading">Loading customers...</div>';
-  try {
-    const res = await fetch(API_URL + "?action=admin_customers&password=" + encodeURIComponent(adminPassword));
-    const data = await res.json();
-    if (!data.success) { box.innerHTML = `<div class="empty">${data.error}</div>`; return; }
-    allCustomers = data.customers || [];
-    filterCustomers();
-  } catch(e) { box.innerHTML = '<div class="empty">Network error</div>'; }
+async function loadCustomers(){
+  const box=document.getElementById("customersTable");
+  box.innerHTML='<div class="loading">Loading customers...</div>';
+  try{
+    const res=await fetch(API_URL+"?action=admin_customers&password="+encodeURIComponent(adminPassword));
+    const data=await res.json();
+    if(!data.success){box.innerHTML=`<div class="empty">${data.error}</div>`;return;}
+    allCustomers=data.customers||[]; filterCustomers();
+  }catch(e){box.innerHTML='<div class="empty">Network error</div>';}
 }
-
-function filterCustomers() {
-  const q = document.getElementById("customerSearch").value.toLowerCase();
-  const filtered = allCustomers.filter(c => !q || String(c.Name||"").toLowerCase().includes(q) || String(c.Phone||"").toLowerCase().includes(q) || String(c.Email||"").toLowerCase().includes(q));
+function filterCustomers(){
+  const q=document.getElementById("customerSearch").value.toLowerCase();
+  const filtered=allCustomers.filter(c=>!q||String(c.Name||"").toLowerCase().includes(q)||String(c.Phone||"").toLowerCase().includes(q)||String(c.Email||"").toLowerCase().includes(q));
   renderCustomersTable(filtered);
 }
-
-function renderCustomersTable(list) {
-  const box = document.getElementById("customersTable");
-  if (!list.length) { box.innerHTML = '<div class="empty">No customers found</div>'; return; }
-  let html = `<table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Orders</th><th>Total Spent</th><th>Last Order</th></tr></thead><tbody>`;
-  list.forEach(c => {
-    const last = c.LastOrderDate ? new Date(c.LastOrderDate).toLocaleDateString("en-IN") : "—";
-    html += `<tr>
-      <td><strong>${esc(c.Name)}</strong></td><td>${esc(c.Phone)}</td><td>${esc(c.Email)}</td>
-      <td>${esc(c.City)}</td><td>${c.TotalOrders}</td>
-      <td>₹${Number(c.TotalSpent||0).toLocaleString("en-IN")}</td><td>${last}</td></tr>`;
+function renderCustomersTable(list){
+  const box=document.getElementById("customersTable");
+  if(!list.length){box.innerHTML='<div class="empty">No customers found</div>';return;}
+  let html=`<table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Orders</th><th>Total Spent</th><th>Last Order</th></tr></thead><tbody>`;
+  list.forEach(c=>{
+    const last=c.LastOrderDate?new Date(c.LastOrderDate).toLocaleDateString("en-IN"):"—";
+    html+=`<tr><td><strong>${esc(c.Name)}</strong></td><td>${esc(c.Phone)}</td><td>${esc(c.Email)}</td>
+      <td>${esc(c.City)}</td><td>${c.TotalOrders}</td><td>₹${Number(c.TotalSpent||0).toLocaleString("en-IN")}</td><td>${last}</td></tr>`;
   });
-  box.innerHTML = html + `</tbody></table>`;
+  box.innerHTML=html+`</tbody></table>`;
 }
 
-function esc(str) {
-  return String(str ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+/* ==================== COUPONS ==================== */
+async function loadCoupons(){
+  const box=document.getElementById("couponsTable");
+  box.innerHTML='<div class="loading">Loading coupons...</div>';
+  try{
+    const res=await fetch(API_URL+"?action=admin_coupons&password="+encodeURIComponent(adminPassword));
+    const data=await res.json();
+    if(!data.success){box.innerHTML=`<div class="empty">${data.error}</div>`;return;}
+    allCoupons=data.coupons||[]; filterCoupons();
+  }catch(e){box.innerHTML='<div class="empty">Network error</div>';}
 }
+function filterCoupons(){
+  const q=document.getElementById("couponSearch").value.toLowerCase();
+  const filtered=allCoupons.filter(c=>!q||String(c.Code||"").toLowerCase().includes(q)||String(c.Description||"").toLowerCase().includes(q));
+  renderCouponsTable(filtered);
+}
+function renderCouponsTable(list){
+  const box=document.getElementById("couponsTable");
+  if(!list.length){box.innerHTML='<div class="empty">No coupons found. Click "+ Add Coupon" to create one.</div>';return;}
+  let html=`<table><thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Used</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
+  list.forEach(c=>{
+    const type=c.DiscountType||"percentage";
+    const typeLabel=type==="bogo"?"BOGO":type==="fixed"?"Fixed ₹":"Percentage %";
+    const value=type==="bogo"?"Buy 1 Get 1":(type==="fixed"?"₹"+c.DiscountValue:c.DiscountValue+"%");
+    const statusClass=(c.Status||"").toLowerCase()==="active"?"active":"inactive";
+    html+=`<tr>
+      <td><strong>${esc(c.Code)}</strong></td>
+      <td><span class="badge ${type==="bogo"?"badge-bogo":"badge-active"}">${typeLabel}</span></td>
+      <td>${value}</td>
+      <td>₹${Number(c.MinimumOrder||0).toLocaleString("en-IN")}</td>
+      <td>${c.UsedCount||0}${c.UsageLimit?" / "+c.UsageLimit:""}</td>
+      <td><span class="badge badge-${statusClass}">${esc(c.Status||"Active")}</span></td>
+      <td><button class="btn btn-primary btn-sm" onclick="openCouponModal('${c.CouponID}')">Edit</button></td>
+    </tr>`;
+  });
+  box.innerHTML=html+`</tbody></table>`;
+}
+function openCouponModal(couponId=null){
+  editingCouponId=couponId;
+  const modal=document.getElementById("couponModal");
+  const content=document.getElementById("couponModalContent");
+  const title=document.getElementById("couponModalTitle");
+  let c=couponId?(allCoupons.find(x=>String(x.CouponID)===String(couponId))||{}):{};
+  title.textContent=couponId?"Edit Coupon — "+c.Code:"Add New Coupon";
+
+  content.innerHTML=`
+    <div class="form-grid">
+      <div class="form-row"><label>Coupon Code *</label><input id="cCode" value="${esc(c.Code)}" placeholder="e.g. WELCOME10" style="text-transform:uppercase"></div>
+      <div class="form-row"><label>Discount Type *</label>
+        <select id="cType" onchange="toggleCouponFields()">
+          <option value="percentage">Percentage (%)</option>
+          <option value="fixed">Fixed Amount (₹)</option>
+          <option value="bogo">BOGO (Buy One Get One)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid" id="valueFields">
+      <div class="form-row"><label id="valueLabel">Discount Value *</label><input type="number" id="cValue" value="${c.DiscountValue||""}"></div>
+      <div class="form-row"><label>Maximum Discount (₹)</label><input type="number" id="cMaxDiscount" value="${c.MaximumDiscount||""}" placeholder="Optional"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Minimum Order (₹)</label><input type="number" id="cMinOrder" value="${c.MinimumOrder||0}"></div>
+      <div class="form-row"><label>Usage Limit</label><input type="number" id="cUsageLimit" value="${c.UsageLimit||""}" placeholder="Leave empty for unlimited"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Start Date</label><input type="date" id="cStartDate"></div>
+      <div class="form-row"><label>End Date</label><input type="date" id="cEndDate"></div>
+    </div>
+    <div class="form-row"><label>Status</label>
+      <select id="cStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+    </div>
+    <div class="form-row"><label>Description</label><input id="cDesc" value="${esc(c.Description)}" placeholder="Optional note"></div>
+    <div class="modal-actions">
+      <button class="btn btn-dark" onclick="saveCoupon()">${couponId?"Update Coupon":"Create Coupon"}</button>
+      <button class="btn btn-light" onclick="closeCouponModal()">Cancel</button>
+    </div>`;
+
+  if(c.DiscountType) document.getElementById("cType").value=c.DiscountType;
+  if(c.Status) document.getElementById("cStatus").value=c.Status;
+  if(c.StartDate) document.getElementById("cStartDate").value=formatDateInput(c.StartDate);
+  if(c.EndDate) document.getElementById("cEndDate").value=formatDateInput(c.EndDate);
+  toggleCouponFields();
+  modal.style.display="flex";
+}
+function toggleCouponFields(){
+  const type=document.getElementById("cType").value;
+  const valueFields=document.getElementById("valueFields");
+  const valueLabel=document.getElementById("valueLabel");
+  if(type==="bogo"){
+    valueFields.style.display="none";
+  } else {
+    valueFields.style.display="grid";
+    valueLabel.textContent = type==="fixed" ? "Discount Amount (₹) *" : "Discount Percentage (%) *";
+  }
+}
+function formatDateInput(d){
+  if(!d) return "";
+  const date=new Date(d);
+  if(isNaN(date)) return "";
+  return date.toISOString().split("T")[0];
+}
+async function saveCoupon(){
+  const code=document.getElementById("cCode").value.trim().toUpperCase();
+  const type=document.getElementById("cType").value;
+  if(!code) return alert("Coupon Code is required");
+  if(type!=="bogo" && !document.getElementById("cValue").value) return alert("Discount Value is required");
+
+  const payload={
+    action:"admin_save_coupon", password:adminPassword,
+    CouponID: editingCouponId||"",
+    Code: code,
+    DiscountType: type,
+    DiscountValue: type==="bogo" ? 0 : Number(document.getElementById("cValue").value),
+    MaximumDiscount: document.getElementById("cMaxDiscount").value || "",
+    MinimumOrder: Number(document.getElementById("cMinOrder").value)||0,
+    UsageLimit: document.getElementById("cUsageLimit").value || "",
+    StartDate: document.getElementById("cStartDate").value || "",
+    EndDate: document.getElementById("cEndDate").value || "",
+    Status: document.getElementById("cStatus").value,
+    Description: document.getElementById("cDesc").value.trim()
+  };
+  try{
+    const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!data.success) return alert(data.error||"Failed");
+    alert(data.message||"Saved!"); closeCouponModal(); loadCoupons();
+  }catch(e){alert("Network error");}
+}
+function closeCouponModal(){document.getElementById("couponModal").style.display="none";editingCouponId=null;}
+
+function esc(str){return String(str??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 </script>
 </body>
 </html>
